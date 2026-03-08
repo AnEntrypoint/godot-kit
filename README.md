@@ -1,158 +1,143 @@
 # godot-kit
 
-Agentic Godot 4.x development boilerplate. Single command setup, REPL/CLI debugging, gdtoolkit integration, DAP support, scene inspector, profiler, and live log streaming.
+Agentic Godot 4.x development boilerplate. Provides CLI tools, a remote REPL/debugger bridge, an EditorPlugin HTTP API, a game runtime HTTP API, GDScript linting/formatting, and auto-installs skill files for AI coding agents (Claude Code, Cursor, Windsurf, Aider, Continue).
 
-## Quick Start
+## Install
 
 ```bash
-# Create a new Godot project
-npx godot-kit my-game
-
-# Download Godot 4.6 automatically
-godot-dev download-engine
-
-# Install gdtoolkit
-godot-dev setup
-
-# Launch Godot with remote debugger
-godot-dev launch
-
-# Connect interactive REPL
-godot-dev repl
-```
-
-## What it creates
-
-```
-my-game/
-├── project.godot           # Godot 4.x project config
-├── scenes/main.tscn        # Main scene
-├── scripts/main.gd         # Main script
-├── addons/repl_bridge/     # REPL autoload (GDScript)
-│   ├── repl_bridge.gd      # Debug bridge with eval, scene dump, logs
-│   └── plugin.cfg
-├── .gdlintrc               # gdtoolkit lint config
-├── .gdformatrc             # gdtoolkit format config
-├── .vscode/
-│   ├── launch.json         # DAP debug config
-│   ├── settings.json       # Godot LSP settings
-│   └── extensions.json     # Recommends Godot Tools
-├── Makefile                # Task shortcuts
-└── README.md
+npm install -g godot-kit
+npx godot-kit <my-project>    # scaffold new project
+godot-dev download-engine     # download Godot 4.x
+godot-dev setup               # install gdtoolkit + agent skills
 ```
 
 ## CLI Commands
 
+### Launch & Debug (Debugger port 6007)
 ```bash
-godot-dev repl                  # Interactive debugger REPL
-godot-dev inspect               # Dump scene tree (one-shot)
-godot-dev logs                  # Stream Godot output logs
-godot-dev lint [files]          # Run gdlint
-godot-dev format [files]        # Run gdformat
-godot-dev launch [scene]        # Launch Godot with debugger
-godot-dev setup                 # Install gdtoolkit (requires Python)
-godot-dev download-engine       # Download Godot 4.6 for current platform
+godot-dev launch [scene]      # launch game with remote debugger
+godot-dev repl                # interactive REPL via debugger
+godot-dev inspect             # dump scene tree (one-shot)
+godot-dev logs                # stream Godot output
 ```
 
-## Godot Engine Auto-Download
-
-`godot-dev download-engine` downloads Godot 4.6-stable from the official GitHub releases:
-
-- **Windows**: downloads `Godot_v4.6-stable_win64.exe.zip`, extracts `.exe`
-- **Linux**: downloads `Godot_v4.6-stable_linux.x86_64.zip`, extracts binary, `chmod +x`
-- **macOS**: downloads `Godot_v4.6-stable_macos.universal.zip`
-
-The engine is saved to `~/.godot-kit/godot[.exe]` and the path is stored in `~/.godot-kit/config.json`. The `launch` command reads this config automatically — no `--godot` flag needed after downloading.
-
+### Code Quality
 ```bash
-# Download once
-godot-dev download-engine
-
-# Launch uses ~/.godot-kit/config.json automatically
-godot-dev launch
+godot-dev lint [files...]     # GDScript lint via gdtoolkit
+godot-dev format [files...]   # GDScript format
+godot-dev validate            # validate all .gd file syntax
 ```
 
-When scaffolding a new project with `npx godot-kit`, it will detect whether Godot is installed and prompt you to run `godot-dev download-engine` if not found.
-
-## REPL Commands
-
-| Command | Description |
-|---------|-------------|
-| `tree` | Dump scene tree |
-| `inspect <id>` | Inspect object properties |
-| `stack` | Show call stack |
-| `vars <frame>` | Show variables at stack frame |
-| `c` / `continue` | Continue execution |
-| `n` / `next` | Step over |
-| `s` / `step` | Step into |
-| `b` / `break` | Pause execution |
-| `bp <file> <line>` | Set/clear breakpoint |
-| `quit` | Exit |
-
-## Debug Architecture
-
-```
-Godot 4 Game
-  └─ --remote-debug tcp://127.0.0.1:6007
-       └─ Binary Variant Protocol (TCP)
-            └─ godot-dev repl / inspect / logs
-                 └─ lib/debugger-client.js
-                      └─ lib/protocol.js (encode/decode Godot variants)
+### Test / Export / Watch
+```bash
+godot-dev test <script.gd>    # run GDScript headlessly, report pass/fail
+godot-dev export <preset>     # export project by preset name
+godot-dev watch               # watch .gd files, hot-reload running game
 ```
 
-### Protocol Details
-
-Godot 4.x remote debugger uses a binary TCP protocol:
-- Each packet: `uint32_LE(payload_size) + uint32_LE(param_count) + [variants...]`
-- First variant is always the command string
-- Remaining variants are parameters
-- Types: NIL, BOOL, INT (32/64), FLOAT (32/64), STRING, VECTOR2/3/4, COLOR, ARRAY, DICTIONARY, OBJECT, etc.
-
-### Ports
-
-| Service | Port | Protocol |
-|---------|------|----------|
-| Remote Debugger (game) | 6007 | Binary TCP |
-| Language Server (LSP) | 6005 | JSON-RPC TCP |
-| Debug Adapter (DAP) | 6006 | DAP over TCP |
-
-## gdtoolkit
+### Editor HTTP API (port 6008)
+Requires `godot_kit_bridge` EditorPlugin (scaffolded automatically). Open the Godot editor first.
 
 ```bash
-# Install (requires Python 3.7+)
-pip install "gdtoolkit==4.*"
-
-# Or via pipx
-pipx install "gdtoolkit==4.*"
+godot-dev editor tree                            # scene tree JSON
+godot-dev editor select <node-path>              # select node in editor
+godot-dev editor run-script <file.gd>            # run GDScript in editor
+godot-dev editor open <res://scene.tscn>         # open scene
+godot-dev editor save                            # save current scene
+godot-dev editor files                           # list project files
+godot-dev editor property <node> <prop> <val>    # set node property
+godot-dev editor create <type> <parent> <name>   # create node
+godot-dev editor delete <node-path>              # delete node
+godot-dev editor signals                         # list signals
+godot-dev editor autoloads                       # list autoloads
 ```
 
-Provides `gdlint` and `gdformat` for GDScript linting and formatting.
+### Game Runtime HTTP API (port 6009)
+Injected via `ReplBridge` autoload. Start the game with `godot-dev launch`.
 
-## VSCode Integration
-
-1. Install [Godot Tools](https://marketplace.visualstudio.com/items?itemName=geequlim.godot-tools)
-2. Set Godot 4 executable path in VSCode settings
-3. Press `F5` to launch with DAP debugger
-
-## Programmatic API
-
-```js
-const { GodotDebuggerClient } = require('godot-kit');
-
-const client = new GodotDebuggerClient('127.0.0.1', 6007);
-await client.connect();
-
-client.on('break', (params) => console.log('Paused at', params));
-client.on('output', (params) => console.log('[godot]', params));
-
-client.requestSceneTree();
-client.on('message', (msg) => {
-  if (msg.command === 'scene:scene_tree_parse_end') {
-    // msg.params contains scene tree data
-  }
-});
+```bash
+godot-dev game tree                              # runtime scene tree
+godot-dev game eval "<GDScript expression>"      # evaluate expression
+godot-dev game globals                           # list autoloads + root children
+godot-dev game fps                               # FPS + performance metrics
+godot-dev game set <node-path> <prop> <val>      # set node property at runtime
+godot-dev game call <node-path> <method> [args]  # call method on node
+godot-dev game node <node-path>                  # get node info
+godot-dev game pause                             # toggle pause
+godot-dev game reload                            # reload current scene
+godot-dev game input                             # show pause/input state
 ```
 
-## License
+## Agent Skill Installation
 
-MIT
+`godot-dev setup` and `npx godot-kit` automatically install skill/rule files for detected AI coding agents:
+
+| Agent | File |
+|-------|------|
+| Claude Code | `~/.claude/skills/godot-dev.md` |
+| Cursor | `.cursor/rules/godot-dev.mdc` |
+| Windsurf | `.windsurf/rules/godot-dev.md` |
+| Aider | `.aider.conf.yml` |
+| Continue | `.continue/config.json` |
+
+## Scaffolded Project Structure
+
+```
+my-project/
+  project.godot                        # Godot project config
+  scenes/main.tscn                     # main scene
+  scripts/main.gd                      # main script
+  addons/
+    repl_bridge/
+      repl_bridge.gd                   # autoload: game runtime HTTP (6009) + debugger bridge
+      plugin.cfg
+    godot_kit_bridge/
+      plugin.gd                        # EditorPlugin: starts HTTP server (6008)
+      editor_http.gd                   # REST API routes for editor control
+      plugin.cfg
+  .vscode/                             # VSCode + Godot Tools config
+  .cursor/rules/godot-dev.mdc          # Cursor AI rules
+  .windsurf/rules/godot-dev.md         # Windsurf AI rules
+```
+
+## Ports
+
+| Service | Port |
+|---------|------|
+| Remote Debugger | 6007 |
+| Editor HTTP API | 6008 |
+| Game Runtime HTTP | 6009 |
+| LSP | 6005 |
+| DAP | 6006 |
+
+## Common Workflows
+
+### Inspect running game
+```bash
+godot-dev launch &
+sleep 2
+godot-dev game tree
+godot-dev game eval "Engine.get_frames_per_second()"
+```
+
+### Set property at runtime
+```bash
+godot-dev game set /root/Main speed 200
+```
+
+### Run a test
+```bash
+godot-dev test tests/test_math.gd
+```
+
+### Hot reload on file change
+```bash
+godot-dev launch &
+godot-dev watch
+```
+
+## Requirements
+
+- Node.js 18+
+- Python + pip (for gdtoolkit)
+- Godot 4.x (`godot-dev download-engine`)

@@ -5,11 +5,13 @@ const { Command } = require('commander');
 const { GodotDebuggerClient } = require('../lib/debugger-client');
 const { parseSceneNode, formatSceneTree } = require('../lib/scene-tree');
 const { startRepl } = require('../lib/repl-commands');
-const { execSync, spawn } = require('child_process');
+const { execSync, spawn, spawnSync } = require('child_process');
 const { findGodot, downloadEngine, GODOT_VERSION } = require('../lib/engine');
+const { registerEditorCommands } = require('../lib/cli-editor');
+const { registerGameCommands } = require('../lib/cli-game');
 
 const program = new Command();
-program.name('godot-dev').description('Agentic Godot 4.x CLI - REPL, debugger, inspector, profiler').version('1.0.0');
+program.name('godot-dev').description('Agentic Godot 4.x CLI - REPL, debugger, inspector, editor bridge, game runtime').version('1.0.0');
 
 function makeClient(opts) {
   return new GodotDebuggerClient(opts.host || '127.0.0.1', parseInt(opts.port || '6007'));
@@ -21,8 +23,7 @@ async function connectOrDie(client) {
     console.log(`Connected to Godot debugger at ${client.host}:${client.port}`);
   } catch (e) {
     console.error(`Cannot connect to Godot at ${client.host}:${client.port}`);
-    console.error('Launch Godot with: --remote-debug tcp://127.0.0.1:6007');
-    console.error('Or run: godot-dev launch');
+    console.error('Launch Godot with: godot-dev launch');
     process.exit(1);
   }
 }
@@ -100,40 +101,98 @@ program.command('format [files...]').description('Format GDScript files using gd
     }
   });
 
+program.command('validate').description('Validate GDScript syntax on all .gd files using gdparse')
+  .action(() => {
+    try {
+      const r = execSync('gdparse .', { stdio: 'pipe', encoding: 'utf8' });
+      if (r) console.log(r);
+      console.log('\x1b[32mValidation passed.\x1b[0m');
+    } catch (e) {
+      if (e.stdout) process.stdout.write(e.stdout);
+      if (e.stderr) process.stderr.write(e.stderr);
+      process.exit(e.status || 1);
+    }
+  });
+
 program.command('launch [scene]').description('Launch Godot with remote debugger enabled')
   .option('--godot <path>', 'Path to Godot executable', 'godot')
   .option('--project <path>', 'Godot project path', '.')
   .option('-p, --port <port>', 'Debugger port', '6007')
   .option('--profiling', 'Enable profiling')
-  .option('--debug-collisions', 'Show collision shapes')
-  .option('--debug-navigation', 'Show navigation')
   .action((scene, opts) => {
     const godot = findGodot(opts.godot);
-    if (!godot) {
-      console.error('Godot executable not found. Run: godot-dev download-engine');
-      process.exit(1);
-    }
+    if (!godot) { console.error('Godot not found. Run: godot-dev download-engine'); process.exit(1); }
     const args = ['--path', opts.project, '--remote-debug', `tcp://127.0.0.1:${opts.port}`, '--verbose'];
     if (opts.profiling) args.push('--profiling');
-    if (opts.debugCollisions) args.push('--debug-collisions');
-    if (opts.debugNavigation) args.push('--debug-navigation');
     if (scene) args.push(scene);
     console.log(`Launching: ${godot} ${args.join(' ')}`);
     const proc = spawn(godot, args, { stdio: 'inherit' });
     proc.on('exit', (code) => process.exit(code || 0));
   });
 
-program.command('setup').description('Install gdtoolkit for GDScript linting/formatting')
+program.command('test <script>').description('Run a GDScript file headlessly and report pass/fail')
+  .option('--godot <path>', 'Path to Godot executable')
+  .option('--project <path>', 'Godot project path', '.')
+  .option('--timeout <ms>', 'Timeout in milliseconds', '30000')
+  .action((script, opts) => {
+    const godot = findGodot(opts.godot);
+    if (!godot) { console.error('Godot not found. Run: godot-dev download-engine'); process.exit(1); }
+    const args = ['--path', opts.project, '--headless', '--script', script, '--quit'];
+    console.log(`Running test: ${script}`);
+    const r = spawnSync(godot, args, { encoding: 'utf8', timeout: parseInt(opts.timeout) });
+    if (r.stdout) process.stdout.write(r.stdout);
+    if (r.stderr) process.stderr.write(r.stderr);
+    const passed = r.status === 0 && !(r.stdout || '').includes('FAILED');
+    console.log(passed ? '\x1b[32mTest PASSED\x1b[0m' : '\x1b[31mTest FAILED\x1b[0m');
+    process.exit(r.status || 0);
+  });
+
+program.command('export <preset>').description('Export project using a named export preset')
+  .option('--godot <path>', 'Path to Godot executable')
+  .option('--project <path>', 'Godot project path', '.')
+  .option('--output <path>', 'Output path', './build/export')
+  .action((preset, opts) => {
+    const godot = findGodot(opts.godot);
+    if (!godot) { console.error('Godot not found. Run: godot-dev download-engine'); process.exit(1); }
+    const args = ['--path', opts.project, '--headless', '--export-release', preset, opts.output];
+    console.log(`Exporting preset: ${preset}`);
+    const proc = spawn(godot, args, { stdio: 'inherit' });
+    proc.on('exit', (code) => process.exit(code || 0));
+  });
+
+program.command('watch').description('Watch .gd files and hot-reload running game on change')
+  .action(() => {
+    const chokidar = require('chokidar');
+    const { gamePost } = require('../lib/http-client');
+    console.log('Watching .gd files for changes... (Ctrl+C to stop)');
+    const watcher = chokidar.watch('**/*.gd', { ignored: /node_modules/, ignoreInitial: true });
+    watcher.on('change', async (file) => {
+      console.log(`Changed: ${file} - sending reload...`);
+      try { await gamePost('/reload-scene', {}); console.log('Reloaded.'); }
+      catch (e) { console.warn(`Reload failed: ${e.message}`); }
+    });
+    process.on('SIGINT', () => { watcher.close(); process.exit(0); });
+  });
+
+program.command('setup').description('Install gdtoolkit for GDScript linting/formatting and register agent skills')
   .action(() => {
     console.log('Installing gdtoolkit for Godot 4.x...');
     for (const cmd of ['pip install --upgrade "gdtoolkit==4.*"', 'pip3 install --upgrade "gdtoolkit==4.*"']) {
-      try { execSync(cmd, { stdio: 'inherit' }); console.log('\x1b[32mgdtoolkit installed.\x1b[0m'); return; }
+      try { execSync(cmd, { stdio: 'inherit' }); console.log('\x1b[32mgdtoolkit installed.\x1b[0m'); break; }
       catch (e) { continue; }
     }
-    console.error('Failed. Install Python and pip first.'); process.exit(1);
+    try {
+      const { installSkills } = require('../lib/skills');
+      installSkills(process.cwd());
+    } catch (e) {
+      console.warn('Skills install warning:', e.message);
+    }
   });
 
 program.command('download-engine').description(`Download Godot ${GODOT_VERSION} for current platform`)
   .action(async () => { await downloadEngine(); });
+
+registerEditorCommands(program);
+registerGameCommands(program);
 
 program.parse(process.argv);
