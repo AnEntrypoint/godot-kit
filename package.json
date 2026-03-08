@@ -1,5 +1,5 @@
 {
-  "name": "@anentrypoint/godot-kit",
+  "name": "godot-kit",
   "version": "1.0.0",
   "description": "Agentic Godot 4.x development boilerplate - REPL/CLI debugging, gdtoolkit, DAP, scene inspector, profiler",
   "bin": {
@@ -28,9 +28,6 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "repository": {
     "type": "git",

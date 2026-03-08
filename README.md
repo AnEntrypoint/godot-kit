@@ -1,4 +1,4 @@
-# @anentrypoint/godot-kit
+# godot-kit
 
 Agentic Godot 4.x development boilerplate. Single command setup, REPL/CLI debugging, gdtoolkit integration, DAP support, scene inspector, profiler, and live log streaming.
 
@@ -6,7 +6,7 @@ Agentic Godot 4.x development boilerplate. Single command setup, REPL/CLI debugg
 
 ```bash
 # Create a new Godot project
-npx @anentrypoint/godot-kit my-game
+npx godot-kit my-game
 
 # Install gdtoolkit
 godot-dev setup
@@ -113,7 +113,7 @@ Provides `gdlint` and `gdformat` for GDScript linting and formatting.
 ## Programmatic API
 
 ```js
-const { GodotDebuggerClient } = require('@anentrypoint/godot-kit');
+const { GodotDebuggerClient } = require('godot-kit');
 
 const client = new GodotDebuggerClient('127.0.0.1', 6007);
 await client.connect();

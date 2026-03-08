@@ -28,7 +28,7 @@ Scaffolded by [godot-kit](https://github.com/AnEntrypoint/godot-kit).
 
 ## Setup
 \`\`\`bash
-npm install -g @anentrypoint/godot-kit
+npm install -g godot-kit
 godot-dev setup
 \`\`\`
 
