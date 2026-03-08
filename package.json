@@ -3,14 +3,22 @@
   "version": "1.0.0",
   "description": "Agentic Godot 4.x development boilerplate - REPL/CLI debugging, gdtoolkit, DAP, scene inspector, profiler",
   "bin": {
-    "godot-kit": "./bin/create.js",
-    "godot-dev": "./bin/cli.js"
+    "godot-kit": "bin/create.js",
+    "godot-dev": "bin/cli.js"
   },
   "main": "./lib/index.js",
   "scripts": {
     "test": "node bin/cli.js --help"
   },
-  "keywords": ["godot", "gdscript", "game-dev", "debugger", "repl", "boilerplate", "gdtoolkit"],
+  "keywords": [
+    "godot",
+    "gdscript",
+    "game-dev",
+    "debugger",
+    "repl",
+    "boilerplate",
+    "gdtoolkit"
+  ],
   "author": "AnEntrypoint",
   "license": "MIT",
   "dependencies": {
@@ -26,6 +34,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AnEntrypoint/godot-kit.git"
+    "url": "git+https://github.com/AnEntrypoint/godot-kit.git"
   }
 }
