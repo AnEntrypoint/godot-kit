@@ -8,11 +8,14 @@ Agentic Godot 4.x development boilerplate. Single command setup, REPL/CLI debugg
 # Create a new Godot project
 npx godot-kit my-game
 
+# Download Godot 4.6 automatically
+godot-dev download-engine
+
 # Install gdtoolkit
 godot-dev setup
 
 # Launch Godot with remote debugger
-godot-dev launch --godot /path/to/godot4
+godot-dev launch
 
 # Connect interactive REPL
 godot-dev repl
@@ -41,14 +44,35 @@ my-game/
 ## CLI Commands
 
 ```bash
-godot-dev repl              # Interactive debugger REPL
-godot-dev inspect           # Dump scene tree (one-shot)
-godot-dev logs              # Stream Godot output logs
-godot-dev lint [files]      # Run gdlint
-godot-dev format [files]    # Run gdformat
-godot-dev launch [scene]    # Launch Godot with debugger
-godot-dev setup             # Install gdtoolkit
+godot-dev repl                  # Interactive debugger REPL
+godot-dev inspect               # Dump scene tree (one-shot)
+godot-dev logs                  # Stream Godot output logs
+godot-dev lint [files]          # Run gdlint
+godot-dev format [files]        # Run gdformat
+godot-dev launch [scene]        # Launch Godot with debugger
+godot-dev setup                 # Install gdtoolkit (requires Python)
+godot-dev download-engine       # Download Godot 4.6 for current platform
 ```
+
+## Godot Engine Auto-Download
+
+`godot-dev download-engine` downloads Godot 4.6-stable from the official GitHub releases:
+
+- **Windows**: downloads `Godot_v4.6-stable_win64.exe.zip`, extracts `.exe`
+- **Linux**: downloads `Godot_v4.6-stable_linux.x86_64.zip`, extracts binary, `chmod +x`
+- **macOS**: downloads `Godot_v4.6-stable_macos.universal.zip`
+
+The engine is saved to `~/.godot-kit/godot[.exe]` and the path is stored in `~/.godot-kit/config.json`. The `launch` command reads this config automatically — no `--godot` flag needed after downloading.
+
+```bash
+# Download once
+godot-dev download-engine
+
+# Launch uses ~/.godot-kit/config.json automatically
+godot-dev launch
+```
+
+When scaffolding a new project with `npx godot-kit`, it will detect whether Godot is installed and prompt you to run `godot-dev download-engine` if not found.
 
 ## REPL Commands
 

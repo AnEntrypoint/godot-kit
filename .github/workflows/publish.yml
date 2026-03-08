@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -17,6 +19,25 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci --ignore-scripts
+
+      - name: Bump version to 1.0.<timestamp>
+        run: |
+          TS=$(date +%s)
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            p.version = '1.0.' + process.argv[1];
+            fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+            console.log('Version bumped to', p.version);
+          " $TS
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump version [skip ci]" || echo "nothing to commit"
+          git push || echo "push skipped"
 
       - run: npm publish --access public
         env:

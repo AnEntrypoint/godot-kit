@@ -6,6 +6,7 @@ const { GodotDebuggerClient } = require('../lib/debugger-client');
 const { parseSceneNode, formatSceneTree } = require('../lib/scene-tree');
 const { startRepl } = require('../lib/repl-commands');
 const { execSync, spawn } = require('child_process');
+const { findGodot, downloadEngine, GODOT_VERSION } = require('../lib/engine');
 
 const program = new Command();
 program.name('godot-dev').description('Agentic Godot 4.x CLI - REPL, debugger, inspector, profiler').version('1.0.0');
@@ -29,11 +30,7 @@ async function connectOrDie(client) {
 program.command('repl').description('Interactive REPL connected to running Godot debugger')
   .option('-h, --host <host>', 'Godot host', '127.0.0.1')
   .option('-p, --port <port>', 'Debugger port', '6007')
-  .action(async (opts) => {
-    const client = makeClient(opts);
-    await connectOrDie(client);
-    startRepl(client);
-  });
+  .action(async (opts) => { const c = makeClient(opts); await connectOrDie(c); startRepl(c); });
 
 program.command('inspect').description('Dump scene tree from running Godot game (one-shot)')
   .option('-h, --host <host>', 'Godot host', '127.0.0.1')
@@ -76,6 +73,9 @@ program.command('lint [files...]').description('Lint GDScript files using gdtool
       if (r) console.log(r);
       console.log('\x1b[32mLint passed.\x1b[0m');
     } catch (e) {
+      if (e.code === 'ENOENT' || (e.stderr && (e.stderr.includes('not found') || e.stderr.includes('not recognized')))) {
+        console.log('gdlint not found. Run: godot-dev setup'); return;
+      }
       if (e.stdout) process.stdout.write(e.stdout);
       if (e.stderr) process.stderr.write(e.stderr);
       process.exit(e.status || 1);
@@ -86,9 +86,8 @@ program.command('format [files...]').description('Format GDScript files using gd
   .option('--check', 'Check only, do not write')
   .action((files, opts) => {
     const targets = files.length ? files : ['.'];
-    const args = ['gdformat', ...(opts.check ? ['--check'] : []), ...targets];
     try {
-      const r = execSync(args.join(' '), { stdio: 'pipe', encoding: 'utf8' });
+      const r = execSync(['gdformat', ...(opts.check ? ['--check'] : []), ...targets].join(' '), { stdio: 'pipe', encoding: 'utf8' });
       if (r) console.log(r);
       console.log('\x1b[32mFormat complete.\x1b[0m');
     } catch (e) {
@@ -106,25 +105,32 @@ program.command('launch [scene]').description('Launch Godot with remote debugger
   .option('--debug-collisions', 'Show collision shapes')
   .option('--debug-navigation', 'Show navigation')
   .action((scene, opts) => {
+    const godot = findGodot(opts.godot);
+    if (!godot) {
+      console.error('Godot executable not found. Run: godot-dev download-engine');
+      process.exit(1);
+    }
     const args = ['--path', opts.project, '--remote-debug', `tcp://127.0.0.1:${opts.port}`, '--verbose'];
     if (opts.profiling) args.push('--profiling');
     if (opts.debugCollisions) args.push('--debug-collisions');
     if (opts.debugNavigation) args.push('--debug-navigation');
     if (scene) args.push(scene);
-    console.log(`Launching: ${opts.godot} ${args.join(' ')}`);
-    const proc = spawn(opts.godot, args, { stdio: 'inherit' });
+    console.log(`Launching: ${godot} ${args.join(' ')}`);
+    const proc = spawn(godot, args, { stdio: 'inherit' });
     proc.on('exit', (code) => process.exit(code || 0));
   });
 
 program.command('setup').description('Install gdtoolkit for GDScript linting/formatting')
   .action(() => {
     console.log('Installing gdtoolkit for Godot 4.x...');
-    const cmds = ['pip install --upgrade "gdtoolkit==4.*"', 'pip3 install --upgrade "gdtoolkit==4.*"'];
-    for (const cmd of cmds) {
+    for (const cmd of ['pip install --upgrade "gdtoolkit==4.*"', 'pip3 install --upgrade "gdtoolkit==4.*"']) {
       try { execSync(cmd, { stdio: 'inherit' }); console.log('\x1b[32mgdtoolkit installed.\x1b[0m'); return; }
       catch (e) { continue; }
     }
     console.error('Failed. Install Python and pip first.'); process.exit(1);
   });
+
+program.command('download-engine').description(`Download Godot ${GODOT_VERSION} for current platform`)
+  .action(async () => { await downloadEngine(); });
 
 program.parse(process.argv);
