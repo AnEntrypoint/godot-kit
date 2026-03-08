@@ -91,6 +91,9 @@ program.command('format [files...]').description('Format GDScript files using gd
       if (r) console.log(r);
       console.log('\x1b[32mFormat complete.\x1b[0m');
     } catch (e) {
+      if (e.code === 'ENOENT' || (e.stderr && (e.stderr.includes('not found') || e.stderr.includes('not recognized')))) {
+        console.log('gdformat not found. Run: godot-dev setup'); return;
+      }
       if (e.stdout) process.stdout.write(e.stdout);
       if (e.stderr) process.stderr.write(e.stderr);
       process.exit(e.status || 1);
