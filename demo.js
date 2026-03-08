@@ -11,33 +11,28 @@ const ok = (s) => `${C.g}PASS${C.x} ${s}`;
 const fail = (s) => `${C.r}FAIL${C.x} ${s}`;
 const skip = (s) => `${C.y}SKIP${C.x} ${s}`;
 const hdr = (n, total, title) => console.log(`\n${C.b}${C.c}[${n}/${total}] ${title}${C.x}`);
-
 const results = [];
 function record(name, passed, skipped, detail) {
   results.push({ name, passed, skipped });
   console.log(skipped ? skip(detail) : passed ? ok(detail) : fail(detail));
 }
 
-console.log(`
-${C.c}${C.b}╔═══════════════════════════════════════╗
-║          godot-kit  demo              ║
-║  Showcasing all capabilities          ║
-╚═══════════════════════════════════════╝${C.x}
-`);
+console.log(`${C.c}${C.b}╔═══════════════════════════════════════╗\n║          godot-kit  demo              ║\n║  Showcasing all capabilities          ║\n╚═══════════════════════════════════════╝${C.x}\n`);
+const TOTAL_SECTIONS = 9;
 
 const KIT = path.join(__dirname);
 const tmpDir = path.join(os.tmpdir(), 'godot-kit-demo-' + process.pid);
 const cleanup = () => { try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {} };
 
-// [1/8] Engine Detection
-hdr(1, 8, 'Engine Detection');
+// [1/9] Engine Detection
+hdr(1, TOTAL_SECTIONS, 'Engine Detection');
 const { findGodot, GODOT_VERSION } = require(path.join(KIT, 'lib/engine'));
 const godotPath = findGodot(null);
 record('engine', !!godotPath, false,
   godotPath ? `Godot ${GODOT_VERSION} found: ${godotPath}` : `Godot not found (run: godot-dev download-engine)`);
 
-// [2/8] Project Scaffolding
-hdr(2, 8, 'Project Scaffolding');
+// [2/9] Project Scaffolding
+hdr(2, TOTAL_SECTIONS, 'Project Scaffolding');
 try {
   const getTemplates = require(path.join(KIT, 'lib/templates'));
   const templates = getTemplates('demo-showcase');
@@ -50,17 +45,13 @@ try {
   const expected = ['project.godot', 'scripts/main.gd', 'addons/repl_bridge/repl_bridge.gd'];
   const missing = expected.filter(f => !fs.existsSync(path.join(tmpDir, f)));
   const created = Object.keys(templates).length;
-  if (missing.length) {
-    record('scaffold', false, false, `Missing files: ${missing.join(', ')}`);
-  } else {
-    record('scaffold', true, false, `${created} files created: ${Object.keys(templates).slice(0,4).join(', ')}...`);
-  }
+  record('scaffold', !missing.length, false, missing.length ? `Missing: ${missing.join(', ')}` : `${created} files created: ${Object.keys(templates).slice(0,4).join(', ')}...`);
 } catch (e) {
   record('scaffold', false, false, `Error: ${e.message}`);
 }
 
-// [3/8] Protocol Layer
-hdr(3, 8, 'Protocol Layer - Binary Variant Encode/Decode');
+// [3/9] Protocol Layer
+hdr(3, TOTAL_SECTIONS, 'Protocol Layer - Binary Variant Encode/Decode');
 try {
   const { encodeVariant, decodeVariant } = require(path.join(KIT, 'lib/protocol'));
   const cases = [
@@ -85,19 +76,11 @@ try {
   record('protocol', false, false, `Error: ${e.message}`);
 }
 
-// [4/8] Compat Checker
-hdr(4, 8, 'GDScript Compat Checker - Godot 3.x Deprecations');
+// [4/9] Compat Checker
+hdr(4, TOTAL_SECTIONS, 'GDScript Compat Checker - Godot 3.x Deprecations');
 try {
   const { checkString, formatWarnings } = require(path.join(KIT, 'lib/compat-checker'));
-  const badGd3 = [
-    'extends KinematicBody',
-    'var tex = StreamTexture.new()',
-    'func _ready():',
-    '  yield($Timer, "timeout")',
-    '  var f = new File()',
-    '  OS.get_ticks_msec()',
-    '  .instance()',
-  ].join('\n');
+  const badGd3 = 'extends KinematicBody\nvar tex = StreamTexture.new()\nfunc _ready():\n  yield($Timer, "timeout")\n  var f = new File()\n  OS.get_ticks_msec()\n  .instance()';
   const warnings = checkString(badGd3, 'example.gd');
   warnings.forEach(w => console.log(`  ${C.y}warn${C.x} line ${w.line}: ${w.message}`));
   record('compat', warnings.length >= 5, false, `${warnings.length} Godot 3.x deprecated patterns detected`);
@@ -105,8 +88,8 @@ try {
   record('compat', false, false, `Error: ${e.message}`);
 }
 
-// [5/8] Skill Installation
-hdr(5, 8, 'Skill Installation');
+// [5/9] Skill Installation
+hdr(5, TOTAL_SECTIONS, 'Skill Installation');
 try {
   const skillPath = path.join(os.homedir(), '.claude', 'skills', 'godot-dev.md');
   const { installSkills } = require(path.join(KIT, 'lib/skills'));
@@ -118,12 +101,12 @@ try {
   record('skills', false, false, `Error: ${e.message}`);
 }
 
-// [6/8] CLI Help
-hdr(6, 8, 'CLI Commands');
+// [6/9] CLI Help
+hdr(6, TOTAL_SECTIONS, 'CLI Commands');
 try {
   const r = spawnSync(process.execPath, [path.join(KIT, 'bin/cli.js'), '--help'], { encoding: 'utf8', timeout: 8000 });
   const out = r.stdout || '';
-  const commands = ['launch', 'validate', 'lint', 'format', 'test', 'repl', 'inspect', 'watch', 'setup', 'download-engine', 'dashboard', 'game', 'editor'];
+  const commands = ['launch', 'validate', 'lint', 'format', 'test', 'repl', 'inspect', 'watch', 'setup', 'download-engine', 'dashboard', 'game', 'editor', 'attach'];
   const found = commands.filter(cmd => out.includes(cmd));
   console.log(`  Commands found: ${found.join(', ')}`);
   record('cli', found.length >= 10, false, `${found.length}/${commands.length} CLI commands present in --help`);
@@ -131,8 +114,8 @@ try {
   record('cli', false, false, `Error: ${e.message}`);
 }
 
-// [7/8] Headless Godot Run
-hdr(7, 8, 'Headless Godot Run');
+// [7/9] Headless Godot Run
+hdr(7, TOTAL_SECTIONS, 'Headless Godot Run');
 if (!godotPath) {
   record('headless', false, true, 'Godot not found - skipping headless run');
 } else {
@@ -156,8 +139,8 @@ if (!godotPath) {
   }
 }
 
-// [8/8] HTTP API Shape Validation
-hdr(8, 8, 'HTTP API Shape Validation (static - no Godot required)');
+// [8/9] HTTP API Shape Validation
+hdr(8, TOTAL_SECTIONS, 'HTTP API Shape Validation (static - no Godot required)');
 try {
   const { REPL_BRIDGE_WITH_HTTP } = require(path.join(KIT, 'lib/gd-repl-bridge'));
   const { EDITOR_HTTP_GD } = require(path.join(KIT, 'lib/gd-editor-http'));
@@ -174,6 +157,26 @@ try {
   record('http-api', gameOk && editorOk, false, `Game ${gameRoutes.length} routes, Editor ${editorRoutes.length} routes - all present in GDScript templates`);
 } catch (e) {
   record('http-api', false, false, `Error: ${e.message}`);
+}
+
+// [9/9] Unified Connection API
+hdr(9, TOTAL_SECTIONS, 'Unified Connection API (static - no Godot required)');
+try {
+  const { Connection } = require(path.join(KIT, 'lib/connection'));
+  const { GodotDebuggerClient } = require(path.join(KIT, 'lib/debugger-client'));
+  const { REPL_BRIDGE_WITH_HTTP } = require(path.join(KIT, 'lib/gd-repl-bridge'));
+  const api = ['eval', 'tree', 'node', 'perf', 'set', 'call', 'globals', 'groups', 'logs', 'pause', 'reload'];
+  const gdChecks = ['register_message_capture', 'send_message', 'EngineDebugger.is_active', 'repl:result'];
+  const cMiss = api.filter(m => typeof Connection.prototype[m] !== 'function');
+  const dMiss = api.filter(m => typeof GodotDebuggerClient.prototype[m] !== 'function');
+  const gMiss = gdChecks.filter(c => !REPL_BRIDGE_WITH_HTTP.includes(c));
+  if (cMiss.length) console.log(`  ${C.r}Connection missing: ${cMiss.join(', ')}${C.x}`);
+  if (dMiss.length) console.log(`  ${C.r}Client missing: ${dMiss.join(', ')}${C.x}`);
+  if (gMiss.length) console.log(`  ${C.r}GDScript missing: ${gMiss.join(', ')}${C.x}`);
+  console.log(`  Connection.auto: ${C.g}present${C.x}  API: ${api.length - cMiss.length}/${api.length}  GDScript captures: ${gdChecks.length - gMiss.length}/${gdChecks.length}`);
+  record('unified-api', !cMiss.length && !dMiss.length && !gMiss.length && typeof Connection.auto === 'function', false, `Connection.auto + ${api.length} unified API methods + GDScript TCP captures`);
+} catch (e) {
+  record('unified-api', false, false, `Error: ${e.message}`);
 }
 
 // Summary

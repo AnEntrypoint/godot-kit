@@ -81,15 +81,38 @@ program.command('launch [scene]').description('Launch Godot with remote debugger
   .option('--project <path>', 'Godot project path', '.')
   .option('-p, --port <port>', 'Debugger port', '6007')
   .option('--profiling', 'Enable profiling')
-  .action((scene, opts) => {
+  .option('--repl', 'Wait for debugger connection and start interactive REPL')
+  .action(async (scene, opts) => {
     const godot = findGodot(opts.godot);
     if (!godot) { console.error('Godot not found. Run: godot-dev download-engine'); process.exit(1); }
     const args = ['--path', opts.project, '--remote-debug', `tcp://127.0.0.1:${opts.port}`, '--verbose'];
     if (opts.profiling) args.push('--profiling');
     if (scene) args.push(scene);
     console.log(`Launching: ${godot} ${args.join(' ')}`);
-    const proc = spawn(godot, args, { stdio: 'inherit' });
-    proc.on('exit', (code) => process.exit(code || 0));
+    const proc = spawn(godot, args, { stdio: opts.repl ? 'pipe' : 'inherit' });
+    if (!opts.repl) { proc.on('exit', (code) => process.exit(code || 0)); return; }
+    if (proc.stdout) proc.stdout.pipe(process.stdout);
+    if (proc.stderr) proc.stderr.pipe(process.stderr);
+    console.log(`Waiting for Godot debugger on port ${opts.port}...`);
+    const { GodotDebuggerClient } = require('../lib/debugger-client');
+    const { startRepl } = require('../lib/repl-commands');
+    const deadline = Date.now() + 10000;
+    const tryConnect = async () => {
+      while (Date.now() < deadline) {
+        try {
+          const c = new GodotDebuggerClient('127.0.0.1', parseInt(opts.port));
+          await c.connect();
+          console.log('Connected to Godot via TCP debugger');
+          proc.on('exit', () => process.exit(0));
+          startRepl(c);
+          return;
+        } catch { await new Promise(r => setTimeout(r, 500)); }
+      }
+      console.error('Timed out waiting for Godot debugger connection');
+      proc.kill();
+      process.exit(1);
+    };
+    tryConnect();
   });
 
 program.command('test <script>').description('Run a GDScript file headlessly and report pass/fail')
