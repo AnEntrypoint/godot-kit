@@ -1,0 +1,20 @@
+{
+  "models": [],
+  "contextProviders": [
+    {
+      "name": "file",
+      "params": {
+        "patterns": [
+          "**/*.gd",
+          "**/*.tscn"
+        ]
+      }
+    }
+  ],
+  "docs": [
+    {
+      "startUrl": "https://docs.godotengine.org/en/stable/",
+      "title": "Godot Docs"
+    }
+  ]
+}

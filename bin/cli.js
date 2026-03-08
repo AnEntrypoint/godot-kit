@@ -101,17 +101,34 @@ program.command('format [files...]').description('Format GDScript files using gd
     }
   });
 
-program.command('validate').description('Validate GDScript syntax on all .gd files using gdparse')
-  .action(() => {
+program.command('validate').description('Lint all .gd files with gdlint and check for Godot 3.x deprecated APIs')
+  .option('--dir <path>', 'Project directory to scan', '.')
+  .action((opts) => {
+    const { checkDir, formatWarnings } = require('../lib/compat-checker');
+    let lintFailed = false;
+    console.log('Running gdlint...');
     try {
-      const r = execSync('gdparse .', { stdio: 'pipe', encoding: 'utf8' });
+      const r = execSync(`gdlint ${opts.dir}`, { stdio: 'pipe', encoding: 'utf8' });
       if (r) console.log(r);
-      console.log('\x1b[32mValidation passed.\x1b[0m');
+      console.log('\x1b[32mgdlint passed.\x1b[0m');
     } catch (e) {
-      if (e.stdout) process.stdout.write(e.stdout);
-      if (e.stderr) process.stderr.write(e.stderr);
-      process.exit(e.status || 1);
+      if (e.code === 'ENOENT' || (e.stderr && (e.stderr.includes('not found') || e.stderr.includes('not recognized')))) {
+        console.warn('gdlint not found — run: godot-dev setup');
+      } else {
+        if (e.stdout) process.stdout.write(e.stdout);
+        if (e.stderr) process.stderr.write(e.stderr);
+        lintFailed = true;
+      }
     }
+    console.log('\nChecking for Godot 3.x deprecated APIs...');
+    const warnings = checkDir(opts.dir);
+    if (warnings.length) {
+      console.warn('\x1b[33mMigration warnings:\x1b[0m');
+      console.warn(formatWarnings(warnings));
+    } else {
+      console.log('\x1b[32mNo deprecated APIs found.\x1b[0m');
+    }
+    if (lintFailed || warnings.length) process.exit(1);
   });
 
 program.command('launch [scene]').description('Launch Godot with remote debugger enabled')
