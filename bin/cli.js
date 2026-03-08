@@ -2,69 +2,14 @@
 'use strict';
 
 const { Command } = require('commander');
-const { GodotDebuggerClient } = require('../lib/debugger-client');
-const { parseSceneNode, formatSceneTree } = require('../lib/scene-tree');
-const { startRepl } = require('../lib/repl-commands');
 const { execSync, spawn, spawnSync } = require('child_process');
 const { findGodot, downloadEngine, GODOT_VERSION } = require('../lib/engine');
 const { registerEditorCommands } = require('../lib/cli-editor');
 const { registerGameCommands } = require('../lib/cli-game');
+const { registerDebuggerCommands } = require('../lib/cli-debugger');
 
 const program = new Command();
 program.name('godot-dev').description('Agentic Godot 4.x CLI - REPL, debugger, inspector, editor bridge, game runtime').version('1.0.0');
-
-function makeClient(opts) {
-  return new GodotDebuggerClient(opts.host || '127.0.0.1', parseInt(opts.port || '6007'));
-}
-
-async function connectOrDie(client) {
-  try {
-    await client.connect();
-    console.log(`Connected to Godot debugger at ${client.host}:${client.port}`);
-  } catch (e) {
-    console.error(`Cannot connect to Godot at ${client.host}:${client.port}`);
-    console.error('Launch Godot with: godot-dev launch');
-    process.exit(1);
-  }
-}
-
-program.command('repl').description('Interactive REPL connected to running Godot debugger')
-  .option('-h, --host <host>', 'Godot host', '127.0.0.1')
-  .option('-p, --port <port>', 'Debugger port', '6007')
-  .action(async (opts) => { const c = makeClient(opts); await connectOrDie(c); startRepl(c); });
-
-program.command('inspect').description('Dump scene tree from running Godot game (one-shot)')
-  .option('-h, --host <host>', 'Godot host', '127.0.0.1')
-  .option('-p, --port <port>', 'Debugger port', '6007')
-  .action(async (opts) => {
-    const client = makeClient(opts);
-    await connectOrDie(client);
-    client.requestSceneTree();
-    let done = false;
-    client.on('message', (msg) => {
-      if (String(msg.command) === 'scene:scene_tree_parse_end' && !done) {
-        done = true;
-        try { formatSceneTree(parseSceneNode(msg.params)).forEach(l => console.log(l)); }
-        catch (e) { console.log(JSON.stringify(msg.params, null, 2)); }
-        client.disconnect(); process.exit(0);
-      }
-    });
-    setTimeout(() => { if (!done) { console.error('Timeout: no scene tree received.'); client.disconnect(); process.exit(1); } }, 5000);
-  });
-
-program.command('logs').description('Stream Godot output logs')
-  .option('-h, --host <host>', 'Godot host', '127.0.0.1')
-  .option('-p, --port <port>', 'Debugger port', '6007')
-  .action(async (opts) => {
-    const client = makeClient(opts);
-    await connectOrDie(client);
-    console.log('Streaming Godot logs (Ctrl+C to stop)...');
-    client.on('output', (p) => { for (const s of p) { if (typeof s === 'string') process.stdout.write(s + '\n'); } });
-    client.on('godot_error', (p) => process.stderr.write('[ERROR] ' + p.join(' ') + '\n'));
-    client.on('profile_frame', (p) => console.log('[PROFILE]', JSON.stringify(p)));
-    client.on('disconnected', () => { console.log('Godot disconnected.'); process.exit(0); });
-    process.on('SIGINT', () => { client.disconnect(); process.exit(0); });
-  });
 
 program.command('lint [files...]').description('Lint GDScript files using gdtoolkit')
   .action((files) => {
@@ -185,7 +130,7 @@ program.command('watch').description('Watch .gd files and hot-reload running gam
     const watcher = chokidar.watch('**/*.gd', { ignored: /node_modules/, ignoreInitial: true });
     watcher.on('change', async (file) => {
       console.log(`Changed: ${file} - sending reload...`);
-      try { await gamePost('/reload-scene', {}); console.log('Reloaded.'); }
+      try { await gamePost('/reload', {}); console.log('Reloaded.'); }
       catch (e) { console.warn(`Reload failed: ${e.message}`); }
     });
     process.on('SIGINT', () => { watcher.close(); process.exit(0); });
@@ -198,12 +143,8 @@ program.command('setup').description('Install gdtoolkit for GDScript linting/for
       try { execSync(cmd, { stdio: 'inherit' }); console.log('\x1b[32mgdtoolkit installed.\x1b[0m'); break; }
       catch (e) { continue; }
     }
-    try {
-      const { installSkills } = require('../lib/skills');
-      installSkills(process.cwd());
-    } catch (e) {
-      console.warn('Skills install warning:', e.message);
-    }
+    try { const { installSkills } = require('../lib/skills'); installSkills(process.cwd()); }
+    catch (e) { console.warn('Skills install warning:', e.message); }
   });
 
 program.command('download-engine').description(`Download Godot ${GODOT_VERSION} for current platform`)
@@ -212,6 +153,10 @@ program.command('download-engine').description(`Download Godot ${GODOT_VERSION} 
 program.command('demo').description('Run the godot-kit capability demo')
   .action(() => { require('../demo'); });
 
+program.command('dashboard').description('Live terminal dashboard: scene tree, perf, logs (requires game on port 6009)')
+  .action(async () => { const { runDashboard } = require('../lib/dashboard'); await runDashboard(); });
+
+registerDebuggerCommands(program);
 registerEditorCommands(program);
 registerGameCommands(program);
 

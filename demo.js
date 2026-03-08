@@ -123,10 +123,10 @@ hdr(6, 8, 'CLI Commands');
 try {
   const r = spawnSync(process.execPath, [path.join(KIT, 'bin/cli.js'), '--help'], { encoding: 'utf8', timeout: 8000 });
   const out = r.stdout || '';
-  const commands = ['launch', 'validate', 'lint', 'format', 'test', 'repl', 'inspect', 'watch', 'setup', 'download-engine'];
+  const commands = ['launch', 'validate', 'lint', 'format', 'test', 'repl', 'inspect', 'watch', 'setup', 'download-engine', 'dashboard', 'game', 'editor'];
   const found = commands.filter(cmd => out.includes(cmd));
   console.log(`  Commands found: ${found.join(', ')}`);
-  record('cli', found.length >= 8, false, `${found.length}/${commands.length} CLI commands present in --help`);
+  record('cli', found.length >= 10, false, `${found.length}/${commands.length} CLI commands present in --help`);
 } catch (e) {
   record('cli', false, false, `Error: ${e.message}`);
 }
@@ -156,8 +156,27 @@ if (!godotPath) {
   }
 }
 
-// [8/8] Summary
-hdr(8, 8, 'Summary');
+// [8/8] HTTP API Shape Validation
+hdr(8, 8, 'HTTP API Shape Validation (static - no Godot required)');
+try {
+  const { REPL_BRIDGE_WITH_HTTP } = require(path.join(KIT, 'lib/gd-repl-bridge'));
+  const { EDITOR_HTTP_GD } = require(path.join(KIT, 'lib/gd-editor-http'));
+  const gameRoutes = ['/tree', '/globals', '/perf', '/input', '/groups', '/physics', '/logs', '/errors', '/watches', '/eval', '/set', '/call', '/signal', '/pause', '/reload', '/watch'];
+  const editorRoutes = ['/scene-tree', '/selected', '/files', '/autoloads', '/plugins', '/import-status', '/settings', '/inspector', '/save-scene', '/play', '/stop', '/select', '/open-scene', '/setting', '/property', '/create-node', '/delete-node', '/run-gdscript'];
+  const gameMissing = gameRoutes.filter(r => !REPL_BRIDGE_WITH_HTTP.includes(r));
+  const editorMissing = editorRoutes.filter(r => !EDITOR_HTTP_GD.includes(r));
+  if (gameMissing.length) console.log(`  ${C.r}Missing game routes: ${gameMissing.join(', ')}${C.x}`);
+  if (editorMissing.length) console.log(`  ${C.r}Missing editor routes: ${editorMissing.join(', ')}${C.x}`);
+  const gameOk = gameMissing.length === 0;
+  const editorOk = editorMissing.length === 0;
+  console.log(`  Game routes: ${gameRoutes.length - gameMissing.length}/${gameRoutes.length} present`);
+  console.log(`  Editor routes: ${editorRoutes.length - editorMissing.length}/${editorRoutes.length} present`);
+  record('http-api', gameOk && editorOk, false, `Game ${gameRoutes.length} routes, Editor ${editorRoutes.length} routes - all present in GDScript templates`);
+} catch (e) {
+  record('http-api', false, false, `Error: ${e.message}`);
+}
+
+// Summary
 const passed = results.filter(r => r.passed).length;
 const skipped = results.filter(r => r.skipped).length;
 const failed = results.filter(r => !r.passed && !r.skipped).length;
