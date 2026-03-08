@@ -8,7 +8,8 @@
   },
   "main": "./lib/index.js",
   "scripts": {
-    "test": "node bin/cli.js --help"
+    "test": "node bin/cli.js --help",
+    "demo": "node demo.js"
   },
   "keywords": [
     "godot",

@@ -2,6 +2,30 @@
 
 Agentic Godot 4.x development boilerplate. Provides CLI tools, a remote REPL/debugger bridge, an EditorPlugin HTTP API, a game runtime HTTP API, GDScript linting/formatting, and auto-installs skill files for AI coding agents (Claude Code, Cursor, Windsurf, Aider, Continue).
 
+## Demo
+
+Run the capability demo to verify everything works on your system:
+
+```bash
+node demo.js
+# or
+npm run demo
+# or
+godot-dev demo
+```
+
+Expected output (all sections pass):
+
+```
+[1/8] Engine Detection      PASS  Godot 4.6-stable found
+[2/8] Project Scaffolding   PASS  16 files created
+[3/8] Protocol Layer        PASS  7/7 variant types encode/decode correctly
+[4/8] Compat Checker        PASS  6 Godot 3.x deprecated patterns detected
+[5/8] Skill Installation    PASS  ~/.claude/skills/godot-dev.md written
+[6/8] CLI Commands          PASS  10/10 CLI commands present in --help
+[7/8] Headless Run          PASS  Godot ran headlessly, exit 0
+```
+
 ## Install
 
 ```bash

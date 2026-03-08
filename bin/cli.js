@@ -209,6 +209,9 @@ program.command('setup').description('Install gdtoolkit for GDScript linting/for
 program.command('download-engine').description(`Download Godot ${GODOT_VERSION} for current platform`)
   .action(async () => { await downloadEngine(); });
 
+program.command('demo').description('Run the godot-kit capability demo')
+  .action(() => { require('../demo'); });
+
 registerEditorCommands(program);
 registerGameCommands(program);
 
