@@ -166,7 +166,7 @@ program.command('setup').description('Install gdtoolkit for GDScript linting/for
       try { execSync(cmd, { stdio: 'inherit' }); console.log('\x1b[32mgdtoolkit installed.\x1b[0m'); break; }
       catch (e) { continue; }
     }
-    try { const { installSkills } = require('../lib/skills'); installSkills(process.cwd()); }
+    try { const { installSkills, installGlobalSkills } = require('../lib/skills'); installGlobalSkills(); installSkills(process.cwd()); }
     catch (e) { console.warn('Skills install warning:', e.message); }
   });
 

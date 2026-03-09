@@ -96,7 +96,13 @@ try {
   installSkills(tmpDir);
   const exists = fs.existsSync(skillPath);
   const size = exists ? fs.statSync(skillPath).size : 0;
-  record('skills', exists, false, `~/.claude/skills/godot-dev.md written (${(size/1024).toFixed(1)} KB)`);
+  const copilotExists = fs.existsSync(path.join(tmpDir, '.github', 'copilot-instructions.md'));
+  const clineExists = fs.existsSync(path.join(tmpDir, '.clinerules'));
+  const zedExists = fs.existsSync(path.join(tmpDir, '.zed', 'settings.json'));
+  const cursorExists = fs.existsSync(path.join(tmpDir, '.cursor', 'rules', 'godot-dev.mdc'));
+  console.log(`  claude skill: ${exists ? C.g+'ok'+C.x : C.r+'missing'+C.x}, cursor: ${cursorExists ? C.g+'ok'+C.x : C.r+'missing'+C.x}, copilot: ${copilotExists ? C.g+'ok'+C.x : C.r+'missing'+C.x}, cline: ${clineExists ? C.g+'ok'+C.x : C.r+'missing'+C.x}, zed: ${zedExists ? C.g+'ok'+C.x : C.r+'missing'+C.x}`);
+  record('skills', exists && copilotExists && clineExists && zedExists && cursorExists, false,
+    `${[['claude',exists],['cursor',cursorExists],['copilot',copilotExists],['cline',clineExists],['zed',zedExists]].filter(([,v])=>v).map(([k])=>k).join(', ')} skill files written`);
 } catch (e) {
   record('skills', false, false, `Error: ${e.message}`);
 }

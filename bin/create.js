@@ -87,7 +87,7 @@ godot-dev game reload                       # Reload scene
 fs.writeFileSync(path.join(targetDir, 'README.md'), readme, 'utf8');
 console.log(`  + README.md`);
 
-try { installSkills(targetDir); } catch (e) { console.warn('  Skills install warning:', e.message); }
+try { const { installGlobalSkills } = require('../lib/skills'); installGlobalSkills(); installSkills(targetDir); } catch (e) { console.warn('  Skills install warning:', e.message); }
 
 const godotPath = findGodot(null);
 if (!godotPath) {
