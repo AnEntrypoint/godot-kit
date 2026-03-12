@@ -54,7 +54,8 @@ program.command('validate').description('Lint all .gd files with gdlint and chec
     let lintFailed = false;
     console.log('Running gdlint...');
     try {
-      const r = execSync(`gdlint ${opts.dir}`, { stdio: 'pipe', encoding: 'utf8' });
+      const absDir = path.resolve(opts.dir);
+      const r = execSync(`gdlint ${absDir}`, { stdio: 'pipe', encoding: 'utf8', cwd: absDir });
       if (r) console.log(r);
       console.log('\x1b[32mgdlint passed.\x1b[0m');
     } catch (e) {
