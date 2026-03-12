@@ -26,62 +26,32 @@ for (const [relPath, content] of Object.entries(templates)) {
 
 const readme = `# ${projectName}
 
-Scaffolded by [godot-kit](https://github.com/AnEntrypoint/godot-kit).
+Godot 4.6 project. Uses [godot-kit](https://github.com/AnEntrypoint/godot-kit) for CLI-driven development.
 
-## Setup
+## First-time setup
 \`\`\`bash
-npm install -g godot-kit
-godot-dev download-engine
-godot-dev setup
+godot-dev download-engine    # download Godot ${GODOT_VERSION}
+godot-dev setup              # install gdtoolkit (needs Python)
 \`\`\`
 
-## Commands
+## Boilerplate
+- **scenes/level.tscn** — main level with platforms, spikes, coins, goal
+- **scenes/player.tscn** — CharacterBody2D with jump/dash/wall-slide
+- **scripts/** — game.gd, player.gd, moving_platform.gd, spike.gd, collectible.gd, goal.gd
+- **addons/repl_bridge** — HTTP API on port 6009 (runtime control)
+- **addons/godot_kit_bridge** — HTTP API on port 6008 (editor control)
+
+## Daily commands
 \`\`\`bash
-godot-dev launch                            # Launch with debugger
-godot-dev repl                              # Interactive REPL
-godot-dev inspect                           # Dump scene tree (debugger)
-godot-dev logs                              # Stream logs
-godot-dev lint                              # GDScript lint
-godot-dev format                            # GDScript format
-godot-dev watch                             # Watch .gd files, hot-reload
-godot-dev test <script.gd>                  # Run GDScript test headlessly
-godot-dev validate                          # Validate all .gd syntax
-godot-dev export <preset>                   # Export project
-godot-dev download-engine                   # Download Godot ${GODOT_VERSION}
+godot-dev launch             # launch game (debugger on :6007)
+godot-dev game tree          # dump live scene tree
+godot-dev game eval "expr"   # run GDScript in running game
+godot-dev game set /root/Level/Player speed 500
+godot-dev lint && godot-dev format
+godot-dev validate           # lint + Godot 3.x compat check
 \`\`\`
 
-## Editor HTTP API (port 6008, requires godot_kit_bridge plugin)
-\`\`\`bash
-godot-dev editor tree                       # Scene tree JSON
-godot-dev editor open <res://scene.tscn>    # Open scene
-godot-dev editor save                       # Save current scene
-godot-dev editor files                      # List project files
-godot-dev editor property <node> <p> <v>   # Set node property
-godot-dev editor create <type> <parent> <n> # Create node
-godot-dev editor signals                    # List signals
-godot-dev editor autoloads                  # List autoloads
-\`\`\`
-
-## Game Runtime HTTP API (port 6009)
-\`\`\`bash
-godot-dev game tree                         # Runtime scene tree
-godot-dev game eval "<GDScript expr>"       # Evaluate expression
-godot-dev game globals                      # List autoloads
-godot-dev game fps                          # FPS + perf metrics
-godot-dev game set <path> <prop> <val>      # Set node property
-godot-dev game call <path> <method> [args]  # Call node method
-godot-dev game pause                        # Toggle pause
-godot-dev game reload                       # Reload scene
-\`\`\`
-
-## Debug Ports
-| Service | Port |
-|---------|------|
-| Remote Debugger | 6007 |
-| Editor HTTP API | 6008 |
-| Game HTTP API | 6009 |
-| LSP | 6005 |
-| DAP | 6006 |
+See CLAUDE.md for full CLI reference and real-world workflow notes.
 `;
 
 fs.writeFileSync(path.join(targetDir, 'README.md'), readme, 'utf8');
@@ -101,13 +71,8 @@ if (!godotPath) {
 }
 
 console.log(`
-  Done! Next steps:
-
-  1. Download engine:       godot-dev download-engine
-  2. Install gdtoolkit:     godot-dev setup
-  3. Launch with debugger:  godot-dev launch
-  4. Connect REPL:          godot-dev repl
-
-  VSCode: Install "Godot Tools" extension, use F5 to debug.
-  Docs:   https://github.com/AnEntrypoint/godot-kit
+  Next:
+    godot-dev download-engine
+    godot-dev setup
+    godot-dev launch
 `);

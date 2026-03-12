@@ -1,6 +1,6 @@
 ---
 description: Godot 4.x agentic development with godot-dev CLI
-globs: ["**/*.gd", "**/*.tscn", "**/*.tres", "project.godot"]
+globs: ["**/*.gd", "**/*.tscn", "**/*.tres", "**/project.godot"]
 alwaysApply: false
 ---
 
@@ -10,10 +10,10 @@ Use `godot-dev` for all Godot interactions. Editor bridge runs on :6008, game ru
 
 Key commands:
 - `godot-dev launch` - start game with debugger
-- `godot-dev game:eval "<expr>"` - evaluate GDScript at runtime
-- `godot-dev game:tree` - dump scene tree
-- `godot-dev editor:tree` - editor scene tree
-- `godot-dev editor:property <node> <prop> <val>` - set property
+- `godot-dev game eval "<expr>"` - evaluate GDScript at runtime
+- `godot-dev game tree` - dump scene tree
+- `godot-dev editor tree` - editor scene tree
+- `godot-dev editor property <node> <prop> <val>` - set property
 - `godot-dev test <script.gd>` - headless test
 - `godot-dev watch` - hot reload on file change
 - `godot-dev lint` / `godot-dev format` / `godot-dev validate` - code quality

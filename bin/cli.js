@@ -2,6 +2,7 @@
 'use strict';
 
 const { Command } = require('commander');
+const path = require('path');
 const { execSync, spawn, spawnSync } = require('child_process');
 const { findGodot, downloadEngine, GODOT_VERSION } = require('../lib/engine');
 const { registerEditorCommands } = require('../lib/cli-editor');
@@ -162,19 +163,72 @@ program.command('watch').description('Watch .gd files and hot-reload running gam
 program.command('setup').description('Install gdtoolkit for GDScript linting/formatting and register agent skills')
   .action(() => {
     console.log('Installing gdtoolkit for Godot 4.x...');
-    for (const cmd of ['pip install --upgrade "gdtoolkit==4.*"', 'pip3 install --upgrade "gdtoolkit==4.*"']) {
-      try { execSync(cmd, { stdio: 'inherit' }); console.log('\x1b[32mgdtoolkit installed.\x1b[0m'); break; }
-      catch (e) { continue; }
+    let installed = false;
+    for (const cmd of ['pip3 install --upgrade "gdtoolkit==4.*"', 'pip install --upgrade "gdtoolkit==4.*"']) {
+      try { execSync(cmd, { stdio: 'inherit' }); console.log('\x1b[32mgdtoolkit installed.\x1b[0m'); installed = true; break; }
+      catch { continue; }
     }
+    if (!installed) console.warn('  gdtoolkit install failed — install Python and retry.');
     try { const { installSkills, installGlobalSkills } = require('../lib/skills'); installGlobalSkills(); installSkills(process.cwd()); }
     catch (e) { console.warn('Skills install warning:', e.message); }
+    console.log('\nSetup complete. Run godot-dev download-export-templates to install export templates.');
   });
 
 program.command('download-engine').description(`Download Godot ${GODOT_VERSION} for current platform`)
   .action(async () => { await downloadEngine(); });
 
-program.command('demo').description('Run the godot-kit capability demo')
-  .action(() => { require('../demo'); });
+program.command('download-export-templates').description(`Download Godot ${GODOT_VERSION} export templates`)
+  .action(async () => {
+    const { downloadExportTemplates } = require('../lib/engine');
+    await downloadExportTemplates();
+  });
+
+program.command('wait-import').description('Wait for Godot editor to finish importing files')
+  .option('--timeout <ms>', 'Max wait time in ms', '30000')
+  .action(async (opts) => {
+    const { editorGet } = require('../lib/http-client');
+    const timeout = parseInt(opts.timeout);
+    const start = Date.now();
+    process.stdout.write('Waiting for import...');
+    while (Date.now() - start < timeout) {
+      try {
+        const r = await editorGet('/import-status');
+        if (!r.scanning) { console.log(' done.'); process.exit(0); }
+      } catch {}
+      await new Promise(r => setTimeout(r, 500));
+      process.stdout.write('.');
+    }
+    console.log(' timed out.');
+    process.exit(1);
+  });
+
+program.command('scene new <respath> [rootType]').description('Create a new empty .tscn scene file (res:// path)')
+  .action((respath, rootType) => {
+    const type = rootType || 'Node2D';
+    const name = path.basename(respath, '.tscn');
+    const relPath = respath.replace('res://', '');
+    const fullPath = path.join(process.cwd(), relPath);
+    const fs2 = require('fs');
+    const path2 = require('path');
+    fs2.mkdirSync(path2.dirname(fullPath), { recursive: true });
+    const content = `[gd_scene format=3]\n\n[node name="${name}" type="${type}"]\n`;
+    fs2.writeFileSync(fullPath, content, 'utf8');
+    console.log(`Created: ${fullPath}`);
+  });
+
+const inputMapCmd = program.command('input-map').description('Manage project input map');
+inputMapCmd.command('list').description('List all input actions from project.godot')
+  .action(() => {
+    const fs2 = require('fs');
+    const raw = fs2.readFileSync(path.join(process.cwd(), 'project.godot'), 'utf8');
+    const lines = raw.split('\n');
+    let inInput = false;
+    lines.forEach(l => {
+      if (l.trim() === '[input]') { inInput = true; return; }
+      if (inInput && l.startsWith('[')) { inInput = false; return; }
+      if (inInput && l.includes('=')) console.log(l.trim());
+    });
+  });
 
 program.command('dashboard').description('Live terminal dashboard: scene tree, perf, logs (requires game on port 6009)')
   .action(async () => { const { runDashboard } = require('../lib/dashboard'); await runDashboard(); });
