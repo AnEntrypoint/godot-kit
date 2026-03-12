@@ -35,7 +35,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const l = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+            l.version = p.version;
+            if (l.packages && l.packages['']) l.packages[''].version = p.version;
+            fs.writeFileSync('package-lock.json', JSON.stringify(l, null, 2) + '\n');
+          "
+          git add package.json package-lock.json
           git commit -m "chore: bump version [skip ci]" || echo "nothing to commit"
           git push || echo "push skipped"
 
