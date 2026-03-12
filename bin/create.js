@@ -57,7 +57,7 @@ See CLAUDE.md for full CLI reference and real-world workflow notes.
 fs.writeFileSync(path.join(targetDir, 'README.md'), readme, 'utf8');
 console.log(`  + README.md`);
 
-try { const { installGlobalSkills } = require('../lib/skills'); installGlobalSkills(); installSkills(targetDir); } catch (e) { console.warn('  Skills install warning:', e.message); }
+try { installSkills(targetDir); } catch (e) { console.warn('  Skills install warning:', e.message); }
 
 const godotPath = findGodot(null);
 if (!godotPath) {

@@ -170,7 +170,7 @@ program.command('setup').description('Install gdtoolkit for GDScript linting/for
       catch { continue; }
     }
     if (!installed) console.warn('  gdtoolkit install failed — install Python and retry.');
-    try { const { installSkills, installGlobalSkills } = require('../lib/skills'); installGlobalSkills(); installSkills(process.cwd()); }
+    try { const { installSkills } = require('../lib/skills'); installSkills(process.cwd()); }
     catch (e) { console.warn('Skills install warning:', e.message); }
     console.log('\nSetup complete. Run godot-dev download-export-templates to install export templates.');
   });
