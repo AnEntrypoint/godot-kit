@@ -2,7 +2,7 @@
 'use strict';
 
 const { Command } = require('commander');
-const { GODOT_VERSION } = require('../lib/engine');
+const { version } = require('../package.json');
 const { registerCoreCommands } = require('../lib/cli-core');
 const { registerEditorCommands } = require('../lib/cli-editor');
 const { registerGameCommands } = require('../lib/cli-game');
@@ -10,7 +10,7 @@ const { registerDebuggerCommands } = require('../lib/cli-debugger');
 const { registerStatusCommands } = require('../lib/cli-status');
 
 const program = new Command();
-program.name('godot-dev').description('Agentic Godot 4.x CLI - REPL, debugger, inspector, editor bridge, game runtime').version(GODOT_VERSION);
+program.name('godot-dev').description('Agentic Godot 4.x CLI - REPL, debugger, inspector, editor bridge, game runtime').version(version);
 
 registerCoreCommands(program);
 registerDebuggerCommands(program);
