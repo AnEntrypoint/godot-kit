@@ -19,3 +19,10 @@ scripts/
 project.godot
 icon.svg
 Makefile
+
+# IDE/tool configs (written to scaffolded projects by installSkills)
+.aider.conf.yml
+.mcp.json
+.continue/
+.cursor/
+.windsurf/
