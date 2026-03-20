@@ -6,10 +6,8 @@
     "godot-kit": "bin/create.js",
     "godot-dev": "bin/cli.js"
   },
-  "main": "./lib/index.js",
   "scripts": {
-    "test": "node bin/cli.js --help",
-    "demo": "node demo.js"
+    "test": "node bin/cli.js --help"
   },
   "keywords": [
     "godot",
