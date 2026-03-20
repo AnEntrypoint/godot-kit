@@ -52,6 +52,8 @@ godot-dev game watch "velocity"         # poll expression every 500ms
 godot-dev game watches                  # all current watch values
 godot-dev game pause                    # toggle get_tree().paused
 godot-dev game reload                   # reload_current_scene()
+godot-dev game screenshot               # capture viewport as PNG (prints file path)
+godot-dev game screenshot --output game.png
 godot-dev game repl                     # interactive GDScript REPL (Ctrl+C exits)
 godot-dev dashboard                     # live terminal: scene tree + perf + logs
 ```
@@ -74,6 +76,8 @@ godot-dev editor delete /root/Level/MyNode
 godot-dev editor property /root/Level/Player speed 500  # set via UndoRedo
 godot-dev editor signals /root/Level/Player
 godot-dev editor run "get_tree().root.get_class()"
+godot-dev editor screenshot             # capture editor screen as PNG (prints file path)
+godot-dev editor screenshot --output editor.png
 godot-dev editor repl
 ```
 
