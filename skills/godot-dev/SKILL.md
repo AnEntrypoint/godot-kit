@@ -13,6 +13,9 @@ bunx godot-kit <project-dir>            # scaffold project + install all agent s
 bunx godot-kit .                        # scaffold in current directory
 godot-dev download-engine               # download Godot 4.6-stable to ~/.godot-kit/
 godot-dev setup                         # install gdtoolkit via pip3
+godot-dev config show                   # print full ~/.godot-kit/config.json
+godot-dev config get godotPath          # get a single config value
+godot-dev config set godotVersion 4.3-stable  # set a config value
 ```
 
 ## Ports
@@ -86,6 +89,8 @@ godot-dev editor screenshot             # capture editor screen as PNG (prints f
 godot-dev editor screenshot --output editor.png
 godot-dev editor signal /root/Level/Player hit  # emit a signal on a node in the edited scene
 godot-dev editor repl
+godot-dev editor settings               # show editor settings info
+godot-dev editor set-setting key value  # set an editor setting
 ```
 
 ## Code Quality
@@ -93,9 +98,11 @@ godot-dev editor repl
 godot-dev lint                          # gdlint all .gd files
 godot-dev lint scripts/player.gd
 godot-dev format                        # gdformat all .gd files
-godot-dev validate                      # lint + Godot 3.x deprecated API scan
+godot-dev validate                      # gdlint (Godot 4.x) + Godot 3→4 migration check
+godot-dev validate --strict             # exit 1 on migration warnings (default: exit 0)
 godot-dev test scripts/test_math.gd     # headless run, exit 0=PASS
 godot-dev watch                         # hot-reload game on .gd file change
+godot-dev watch --lint                  # also run gdlint on changed .gd files before reload
 ```
 
 ## Workflow Rules
