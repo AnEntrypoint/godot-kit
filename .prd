@@ -1,1 +1,102 @@
-[]
+[
+  {
+    "id": "fix-duplicate-input-action",
+    "subject": "Remove duplicate /input-action handler block in gd-repl-bridge.js",
+    "status": "pending",
+    "description": "Two identical 'if url_path == /input-action and method == POST' blocks exist. The second is dead code. Remove it.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "bug",
+    "acceptance": [
+      "Only one /input-action handler block exists in gd-repl-bridge.js"
+    ],
+    "edge_cases": []
+  },
+  {
+    "id": "fix-validate-strict",
+    "subject": "Add --strict flag to validate so migration warnings don't force exit 1 by default",
+    "status": "pending",
+    "description": "Currently validate exits 1 if any migration warnings exist even when lint passes. Add --strict: without it warnings print but exit 0. With --strict warnings cause exit 1. Lint failures always exit 1.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "feature",
+    "acceptance": [
+      "godot-dev validate exits 0 when lint passes and only migration warnings (no --strict)",
+      "godot-dev validate --strict exits 1 when warnings exist",
+      "godot-dev validate still exits 1 on lint failure regardless of --strict"
+    ],
+    "edge_cases": []
+  },
+  {
+    "id": "fix-watch-tscn",
+    "subject": "Make watch command also watch .tscn files",
+    "status": "pending",
+    "description": "cli-core.js watch only watches **/*.gd. Add **/*.tscn to chokidar pattern. Do not run gdlint on .tscn files.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "feature",
+    "acceptance": [
+      "Saving a .tscn file triggers reload just like a .gd file",
+      ".tscn files are skipped by --lint"
+    ],
+    "edge_cases": [
+      "Do not run gdlint on .tscn files when --lint is active"
+    ]
+  },
+  {
+    "id": "fix-repl-eval-prompt-ordering",
+    "subject": "Fix TCP REPL prompt appearing before async eval result",
+    "status": "pending",
+    "description": "In repl-commands.js dispatch(), the else branch calls client.eval().then() but rl.prompt() is called immediately after dispatch() returns synchronously. Prompt appears before result. Move rl.prompt() call into eval .then()/.catch() so it appears after the result.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "bug",
+    "acceptance": [
+      "In TCP REPL eval result always prints before the next godot> prompt",
+      "Synchronous commands still show prompt immediately"
+    ],
+    "edge_cases": [
+      "startRepl passes rl separately — dispatch needs rl reference to call prompt"
+    ]
+  },
+  {
+    "id": "connection-missing-methods",
+    "subject": "Add physics, resources, screenshot methods to Connection class",
+    "status": "pending",
+    "description": "connection.js Connection class is missing physics(), resources(), screenshot() which exist on HTTP bridge. The attach REPL .perf .tree commands work via conn.* but physics/resources/screenshot do not.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "feature",
+    "acceptance": [
+      "conn.physics() calls GET /physics when transport === http",
+      "conn.resources() calls GET /resources when transport === http",
+      "conn.screenshot() calls GET /screenshot when transport === http"
+    ],
+    "edge_cases": [
+      "TCP transport does not support these routes — should reject with descriptive error"
+    ]
+  },
+  {
+    "id": "fix-macos-godot-extract",
+    "subject": "Fix downloadEngine failing to find Godot binary on macOS",
+    "status": "pending",
+    "description": "engine.js downloadEngine filters extracted files with isFile() and startsWith('Godot'). On macOS the extracted item is Godot.app (a directory), not a file, so godotPath is null. Fix: on macOS look for binary inside Godot.app/Contents/MacOS/Godot.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "bug",
+    "acceptance": [
+      "godot-dev download-engine on macOS finds binary at Godot.app/Contents/MacOS/Godot",
+      "godotPath is written to config correctly",
+      "Windows and Linux behavior unchanged"
+    ],
+    "edge_cases": [
+      "App bundle path may vary between Godot versions"
+    ]
+  }
+]
