@@ -1,20 +1,5 @@
 [
   {
-    "id": "fix-docs-missing-raycast2d",
-    "subject": "Add raycast2d to skills.js SKILL.md and templates.js CLAUDE.md",
-    "status": "pending",
-    "description": "skills.js SKILL.md and templates.js CLAUDE.md are missing the 'game raycast2d' command. It exists in cli-game.js but is not documented.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "infra",
-    "acceptance": [
-      "skills.js SKILL.md includes 'godot-dev game raycast2d <x1> <y1> <x2> <y2>'",
-      "templates.js CLAUDE.md includes the same"
-    ],
-    "edge_cases": []
-  },
-  {
     "id": "fix-dashboard-pause-key",
     "subject": "Add p key to dashboard for toggling game pause",
     "status": "pending",
