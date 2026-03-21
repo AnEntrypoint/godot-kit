@@ -1,6 +1,6 @@
 {
   "name": "godot-kit",
-  "version": "1.0.1774102787",
+  "version": "1.0.1774107303",
   "description": "Agentic Godot 4.x development boilerplate - REPL/CLI debugging, gdtoolkit, DAP, scene inspector, profiler",
   "bin": {
     "godot-kit": "bin/create.js",
