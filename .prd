@@ -1,22 +1,5 @@
 [
   {
-    "id": "fix-game-repl-errors",
-    "subject": "Add .errors special command to game REPL",
-    "status": "pending",
-    "description": "gameRepl() SPECIAL map in cli-game.js has .tree, .globals, .perf, .help but not .errors. Users in the REPL cannot view buffered errors without exiting. Add .errors to call GET /errors and print them.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "Typing .errors in game repl prints buffered error lines in red",
-      ".help lists .errors"
-    ],
-    "edge_cases": [
-      "Empty error buffer prints nothing or a clear message"
-    ]
-  },
-  {
     "id": "fix-watch-delete-cli",
     "subject": "Add game watch-delete <id> command to delete a watch by ID",
     "status": "pending",
@@ -66,20 +49,5 @@
     "edge_cases": [
       "PROPERTY_USAGE_SCRIPT_VARIABLE = 8192 in Godot 4"
     ]
-  },
-  {
-    "id": "fix-dashboard-log-dedup-collision",
-    "subject": "Fix dashboard log/error dedup using same Set causing error messages to be dropped",
-    "status": "pending",
-    "description": "dashboard.js uses a single `seenLogs` Set for both log lines and error lines. If the same message appears in both buffers (e.g. an error that was also printed), whichever comes second is silently dropped. Use separate sets.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "bug",
-    "acceptance": [
-      "Same message in both logs and errors both appear in dashboard",
-      "Duplicate entries within the same buffer are still deduplicated"
-    ],
-    "edge_cases": []
   }
 ]
