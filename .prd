@@ -1,22 +1,5 @@
 [
   {
-    "id": "fix-dashboard-loading-placeholder",
-    "subject": "Clear logLines (loading...) placeholder on first dashboard refresh",
-    "status": "pending",
-    "description": "dashboard.js initializes logLines=['(loading...)'] but refresh() only appends to it via push(). The placeholder never gets removed unless the log buffer overflows LOG_H-2 items. treeLines and perfLines are reassigned (fixed) but logLines is not. Fix: clear logLines on first successful refresh.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "bug",
-    "acceptance": [
-      "After first refresh, '(loading...)' no longer appears in log panel if logs are empty",
-      "Log entries from previous fetches still accumulate correctly"
-    ],
-    "edge_cases": [
-      "No logs returned - panel should be empty not show placeholder"
-    ]
-  },
-  {
     "id": "add-watch-tres-files",
     "subject": "Watch .tres resource files in godot-dev watch command",
     "status": "pending",
