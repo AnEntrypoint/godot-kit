@@ -1,23 +1,5 @@
 [
   {
-    "id": "fix-dashboard-pause-key",
-    "subject": "Add p key to dashboard for toggling game pause",
-    "status": "pending",
-    "description": "dashboard.js keyboard handler only handles q (quit) and r (refresh). Add p key to toggle game pause via POST /pause and show pause state in the status bar.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "Pressing p in dashboard toggles game pause",
-      "Status bar shows PAUSED when game is paused",
-      "Pressing p again unpauses"
-    ],
-    "edge_cases": [
-      "POST /pause may fail if game not running — show error in log area, don't crash"
-    ]
-  },
-  {
     "id": "fix-connection-missing-http-wrappers",
     "subject": "Add watch, signal, input HTTP wrappers to Connection class",
     "status": "pending",
