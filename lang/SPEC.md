@@ -29,33 +29,31 @@ type Diagnostic = {
 
 ## Plugin Loading
 
-- Loader: `lang/loader.js` — exports `loadLangPlugins(projectDir): Plugin[]`
-- Scans `<projectDir>/lang/*.js`, excludes `loader.js`
-- Requires each file, validates shape `{ id, exec: { match, run } }`
-- Load failures are silent — invalid plugins are skipped
+- gm-cc scans `<projectDir>/lang/*.js` at hook time — no project-level hook setup needed
+- Validates shape `{ id, exec: { match, run } }` — invalid plugins are silently skipped
+- `lang/loader.js` is a convenience export for testing; hooks inline their own loader
 
-## exec: Dispatch
+## exec: Dispatch (pre-tool-use hook — gm-cc managed)
 
-Pre-tool-use hook intercepts Bash commands matching `/^exec:(S+)\n([sS]+)/`.
+Intercepts `exec:<id>\n<code>` when `<id>` is not a built-in lang.
 
-1. Extract `<id>` and `<code>` from command body
-2. Find first plugin where `plugin.exec.match.test(command)`
-3. Call `plugin.exec.run(code, cwd)` with 10s timeout (kill on exceed)
-4. Return output to Claude via `allowWithNoop(output)` — replaces Bash command with tmp-file read
-5. If no plugin matches, fall through to existing exec:<lang> built-ins
+1. Find first plugin where `plugin.exec.match.test(command)`
+2. Call `plugin.exec.run(code, cwd)` in a child process (30s timeout)
+3. Return output as `exec:<id> output:\n\n<result>`
+4. If no plugin matches, fall through to built-in exec: dispatch
 
-## LSP Context (UserPromptSubmit hook)
+## LSP Context (prompt-submit hook — gm-cc managed)
 
-1. Load plugins via `loadLangPlugins(projectDir)`
-2. For each plugin with `lsp`: call `plugin.lsp.check(code, cwd)` on relevant project files
-3. Inject diagnostics as structured text into `additionalContext`
-4. Failures are silent — skip that plugin's LSP
+1. Load all plugins from `<projectDir>/lang/`
+2. For each plugin with `lsp` + `extensions`: scan top 3 most-recently-modified matching files
+3. Call `plugin.lsp.check(fileContent, dir)` synchronously — async not supported here
+4. Inject diagnostics as `<file>:<line>:<col>: <severity>: <message>` into `additionalContext`
 
-## context Injection (UserPromptSubmit hook)
+## context Injection (session-start + prompt-submit hooks — gm-cc managed)
 
 For each plugin with `context`:
-- If string: append directly to `additionalContext`
-- If function: call `context()`, append result (truncate to 2000 chars)
+- String: injected directly into `additionalContext`
+- Function: called, result injected (truncated to 2000 chars)
 - Failures are silent
 
 ## Constraints
