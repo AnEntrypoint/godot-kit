@@ -35,3 +35,14 @@ node -e "const t=require('./lib/templates')('test'); console.log(Object.keys(t).
 
 ## Publish
 Push to master. CI bumps version to `1.0.<timestamp>`, commits `package.json` + `package-lock.json`, publishes to npm. Requires `NPM_TOKEN` secret in GitHub repo settings.
+
+## Language Plugins (lang/)
+Project-local language plugins extend gm-cc with `exec:<lang>` runtime support and LSP context.
+
+- `lang/SPEC.md` — plugin interface specification
+- `lang/loader.js` — `loadLangPlugins(projectDir)` used by hooks
+- `lang/gdscript.js` — GDScript plugin: `exec:gdscript` routes to `godot-dev game eval` (single expr) or headless Godot (multi-line); LSP via gdlint
+
+Plugin shape: `{ id, exec: { match, run }, lsp?, context?, extensions? }`
+
+Hooks auto-discover plugins: pre-tool-use intercepts `exec:<lang>`, prompt-submit injects context + LSP diagnostics.
