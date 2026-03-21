@@ -1,23 +1,5 @@
 [
   {
-    "id": "connection-missing-methods",
-    "subject": "Add physics, resources, screenshot methods to Connection class",
-    "status": "pending",
-    "description": "connection.js Connection class is missing physics(), resources(), screenshot() which exist on HTTP bridge. The attach REPL .perf .tree commands work via conn.* but physics/resources/screenshot do not.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "conn.physics() calls GET /physics when transport === http",
-      "conn.resources() calls GET /resources when transport === http",
-      "conn.screenshot() calls GET /screenshot when transport === http"
-    ],
-    "edge_cases": [
-      "TCP transport does not support these routes — should reject with descriptive error"
-    ]
-  },
-  {
     "id": "fix-macos-godot-extract",
     "subject": "Fix downloadEngine failing to find Godot binary on macOS",
     "status": "pending",
