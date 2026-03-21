@@ -1,39 +1,5 @@
 [
   {
-    "id": "fix-watch-tscn",
-    "subject": "Make watch command also watch .tscn files",
-    "status": "pending",
-    "description": "cli-core.js watch only watches **/*.gd. Add **/*.tscn to chokidar pattern. Do not run gdlint on .tscn files.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "Saving a .tscn file triggers reload just like a .gd file",
-      ".tscn files are skipped by --lint"
-    ],
-    "edge_cases": [
-      "Do not run gdlint on .tscn files when --lint is active"
-    ]
-  },
-  {
-    "id": "fix-repl-eval-prompt-ordering",
-    "subject": "Fix TCP REPL prompt appearing before async eval result",
-    "status": "pending",
-    "description": "In repl-commands.js dispatch(), the else branch calls client.eval().then() but rl.prompt() is called immediately after dispatch() returns synchronously. Prompt appears before result. Move rl.prompt() call into eval .then()/.catch() so it appears after the result.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "bug",
-    "acceptance": [
-      "In TCP REPL eval result always prints before the next godot> prompt",
-      "Synchronous commands still show prompt immediately"
-    ],
-    "edge_cases": [
-      "startRepl passes rl separately — dispatch needs rl reference to call prompt"
-    ]
-  },
-  {
     "id": "connection-missing-methods",
     "subject": "Add physics, resources, screenshot methods to Connection class",
     "status": "pending",
