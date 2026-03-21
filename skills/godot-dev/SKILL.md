@@ -50,6 +50,7 @@ godot-dev game errors                   # push_error() buffer
 godot-dev game groups                   # all groups -> member paths
 godot-dev game watch "velocity"         # poll expression every 500ms
 godot-dev game watches                  # all current watch values
+godot-dev game input                    # pause state + connected joypads
 godot-dev game pause                    # toggle get_tree().paused
 godot-dev game reload                   # reload_current_scene()
 godot-dev game screenshot               # capture viewport as PNG (prints file path)
