@@ -1,35 +1,5 @@
 [
   {
-    "id": "fix-duplicate-input-action",
-    "subject": "Remove duplicate /input-action handler block in gd-repl-bridge.js",
-    "status": "pending",
-    "description": "Two identical 'if url_path == /input-action and method == POST' blocks exist. The second is dead code. Remove it.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "bug",
-    "acceptance": [
-      "Only one /input-action handler block exists in gd-repl-bridge.js"
-    ],
-    "edge_cases": []
-  },
-  {
-    "id": "fix-validate-strict",
-    "subject": "Add --strict flag to validate so migration warnings don't force exit 1 by default",
-    "status": "pending",
-    "description": "Currently validate exits 1 if any migration warnings exist even when lint passes. Add --strict: without it warnings print but exit 0. With --strict warnings cause exit 1. Lint failures always exit 1.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "godot-dev validate exits 0 when lint passes and only migration warnings (no --strict)",
-      "godot-dev validate --strict exits 1 when warnings exist",
-      "godot-dev validate still exits 1 on lint failure regardless of --strict"
-    ],
-    "edge_cases": []
-  },
-  {
     "id": "fix-watch-tscn",
     "subject": "Make watch command also watch .tscn files",
     "status": "pending",
