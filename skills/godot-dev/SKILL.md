@@ -57,6 +57,7 @@ godot-dev game screenshot               # capture viewport as PNG (prints file p
 godot-dev game screenshot --output game.png
 godot-dev game create /root Node2D MyNode  # create a node in the running scene tree
 godot-dev game delete /root/MyNode          # queue-free a node in the running scene tree
+godot-dev game raycast2d <x1> <y1> <x2> <y2>  # 2D physics raycast between two points
 godot-dev game input-action jump            # press an input action (simulate key/button)
 godot-dev game input-action jump release    # release an input action
 godot-dev game repl                     # interactive GDScript REPL (Ctrl+C exits)
