@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "id": "fix-dashboard-pause-indicator",
+    "subject": "Show PAUSED state in dashboard status bar after p key toggles pause",
+    "status": "pending",
+    "description": "dashboard.js p key calls POST /pause and refreshes, but the refresh redraws with no visual indication of pause state. The /perf response doesn't include pause state. Need to track pause state locally and show it in the status bar hint line.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "feature",
+    "acceptance": [
+      "When game is paused, dashboard status bar shows PAUSED in yellow",
+      "When unpaused, status bar returns to normal",
+      "State is tracked from POST /pause response (returns {paused: bool})"
+    ],
+    "edge_cases": [
+      "Initial state unknown until first p press — don't show anything until toggled"
+    ]
+  },
+  {
+    "id": "fix-skills-docs-gaps",
+    "subject": "Fix skills.js SKILL.md docs: validate description, missing config commands, editor screenshot/signal/settings",
+    "status": "pending",
+    "description": "skills.js SKILL.md has several doc gaps: (1) validate described as 'Godot 3.x deprecated API scan' should be 'Godot 3→4 migration issues' with --strict mention; (2) config show/get/set/path commands missing; (3) editor screenshot missing; (4) editor signal missing; (5) editor settings/set-setting missing; (6) validate --strict and watch --lint flags undocumented.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "infra",
+    "acceptance": [
+      "validate doc updated to say '3→4 migration issues' and mentions --strict",
+      "config commands section added",
+      "editor screenshot, editor signal, editor settings, editor set-setting added",
+      "watch --lint flag documented"
+    ],
+    "edge_cases": []
+  }
+]
