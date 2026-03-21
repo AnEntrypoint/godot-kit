@@ -1,23 +1,5 @@
 [
   {
-    "id": "fix-dashboard-pause-indicator",
-    "subject": "Show PAUSED state in dashboard status bar after p key toggles pause",
-    "status": "pending",
-    "description": "dashboard.js p key calls POST /pause and refreshes, but the refresh redraws with no visual indication of pause state. The /perf response doesn't include pause state. Need to track pause state locally and show it in the status bar hint line.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "When game is paused, dashboard status bar shows PAUSED in yellow",
-      "When unpaused, status bar returns to normal",
-      "State is tracked from POST /pause response (returns {paused: bool})"
-    ],
-    "edge_cases": [
-      "Initial state unknown until first p press — don't show anything until toggled"
-    ]
-  },
-  {
     "id": "fix-skills-docs-gaps",
     "subject": "Fix skills.js SKILL.md docs: validate description, missing config commands, editor screenshot/signal/settings",
     "status": "pending",
