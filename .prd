@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "id": "fix-docs-missing-raycast2d",
+    "subject": "Add raycast2d to skills.js SKILL.md and templates.js CLAUDE.md",
+    "status": "pending",
+    "description": "skills.js SKILL.md and templates.js CLAUDE.md are missing the 'game raycast2d' command. It exists in cli-game.js but is not documented.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "infra",
+    "acceptance": [
+      "skills.js SKILL.md includes 'godot-dev game raycast2d <x1> <y1> <x2> <y2>'",
+      "templates.js CLAUDE.md includes the same"
+    ],
+    "edge_cases": []
+  },
+  {
+    "id": "fix-dashboard-pause-key",
+    "subject": "Add p key to dashboard for toggling game pause",
+    "status": "pending",
+    "description": "dashboard.js keyboard handler only handles q (quit) and r (refresh). Add p key to toggle game pause via POST /pause and show pause state in the status bar.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "feature",
+    "acceptance": [
+      "Pressing p in dashboard toggles game pause",
+      "Status bar shows PAUSED when game is paused",
+      "Pressing p again unpauses"
+    ],
+    "edge_cases": [
+      "POST /pause may fail if game not running — show error in log area, don't crash"
+    ]
+  },
+  {
+    "id": "fix-connection-missing-http-wrappers",
+    "subject": "Add watch, signal, input HTTP wrappers to Connection class",
+    "status": "pending",
+    "description": "connection.js Connection class is missing wrappers for watch(), signal(), input() which are available on HTTP bridge. These let attach REPL use all bridge features.",
+    "blocking": [],
+    "blockedBy": [],
+    "effort": "small",
+    "category": "feature",
+    "acceptance": [
+      "conn.watch(expr) calls POST /watch when http",
+      "conn.signal(path, sig, args) calls POST /signal when http",
+      "conn.input() calls GET /input when http",
+      "TCP transport rejects with descriptive error for these http-only methods"
+    ],
+    "edge_cases": []
+  }
+]
