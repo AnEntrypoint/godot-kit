@@ -26,25 +26,6 @@
     ]
   },
   {
-    "id": "game-bridge-scene-change",
-    "subject": "Add /change-scene endpoint to game bridge for transitioning scenes",
-    "status": "pending",
-    "description": "gd-repl-bridge.js has /reload (reload current) but no way to change to a different scene. Agents need to navigate between scenes for testing. Add POST /change-scene {path} calling get_tree().change_scene_to_file().",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "POST /change-scene {path} calls get_tree().change_scene_to_file(path)",
-      "returns {ok:true} on success, {error:...} if path invalid",
-      "cli-game.js gets 'scene-change <respath>' command"
-    ],
-    "edge_cases": [
-      "invalid res:// path returns Godot error",
-      "CLAUDE.md template updated with command"
-    ]
-  },
-  {
     "id": "game-bridge-physics-raycast",
     "subject": "Add /raycast endpoint to game bridge for physics queries",
     "status": "pending",
@@ -119,24 +100,6 @@
     ]
   },
   {
-    "id": "game-bridge-log-clear",
-    "subject": "No way to clear the game log/error buffers — stale logs persist across reloads",
-    "status": "pending",
-    "description": "gd-repl-bridge.js _log_buffer and _err_buffer grow up to 500 entries and dedupe in CLI. But after game reload, old logs persist in buffer. No DELETE /logs endpoint to clear them. Agents reading logs after a reload see pre-reload output mixed with new output.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "DELETE /logs clears _log_buffer",
-      "DELETE /errors clears _err_buffer",
-      "cli-game.js gets 'logs-clear' command calling DELETE /logs"
-    ],
-    "edge_cases": [
-      "clear should also reset the seenLogs Set in dashboard on next refresh"
-    ]
-  },
-  {
     "id": "editor-bridge-run-gdscript-multiline",
     "subject": "editor run command only supports single-line GDScript via Expression — complex ops impossible",
     "status": "pending",
@@ -154,38 +117,6 @@
       "GDScript files can't be hot-created and run in editor context trivially — may need EditorScript approach",
       "Syntax errors in code should return error not crash"
     ]
-  },
-  {
-    "id": "gd-plugin-version-sync",
-    "subject": "Plugin version in PLUGIN_CFG is hardcoded '1.0.0' — should track package version",
-    "status": "pending",
-    "description": "lib/gd-plugin.js: version=\"1.0.0\" is static. When npm package version bumps, plugin version stays at 1.0.0. Agents checking plugin version can't correlate with npm version.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "PLUGIN_CFG version reads from package.json version at require time",
-      "installed plugin.cfg reflects current npm package version"
-    ],
-    "edge_cases": [
-      "package.json must be findable relative to gd-plugin.js (__dirname/../../package.json)"
-    ]
-  },
-  {
-    "id": "skills-js-audit-new-commands",
-    "subject": "skills.js SKILL.md (via skills/godot-dev/SKILL.md) missing new commands added this session",
-    "status": "pending",
-    "description": "The SKILL.md at skills/godot-dev/SKILL.md is the source for what gets installed in scaffolded projects. New commands added: game create, game delete, game input-action, editor signal. Need to verify SKILL.md documents these.",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "bug",
-    "acceptance": [
-      "SKILL.md documents 'game create', 'game delete', 'game input-action', 'editor signal'",
-      "Each has example usage"
-    ],
-    "edge_cases": []
   },
   {
     "id": "cli-core-watch-lint-on-change",
@@ -222,25 +153,6 @@
     ],
     "edge_cases": [
       "retry should not apply to ping() — ping is intentionally a single fast probe"
-    ]
-  },
-  {
-    "id": "game-bridge-spawn-scene",
-    "subject": "No way to instantiate a .tscn PackedScene at runtime via game bridge",
-    "status": "pending",
-    "description": "gd-repl-bridge.js /create-node creates by ClassDB type. But agents need to spawn full scenes (PackedScene). Add POST /spawn-scene {path, parent, name} calling load(path).instantiate().",
-    "blocking": [],
-    "blockedBy": [],
-    "effort": "small",
-    "category": "feature",
-    "acceptance": [
-      "POST /spawn-scene {path, parent} loads res:// scene and spawns it",
-      "returns {ok:true, path: node_path}",
-      "cli-game.js gets 'spawn <respath> [parent]' command"
-    ],
-    "edge_cases": [
-      "invalid path returns error",
-      "parent defaults to get_tree().root"
     ]
   }
 ]
