@@ -55,6 +55,10 @@ godot-dev game pause                    # toggle get_tree().paused
 godot-dev game reload                   # reload_current_scene()
 godot-dev game screenshot               # capture viewport as PNG (prints file path)
 godot-dev game screenshot --output game.png
+godot-dev game create /root Node2D MyNode  # create a node in the running scene tree
+godot-dev game delete /root/MyNode          # queue-free a node in the running scene tree
+godot-dev game input-action jump            # press an input action (simulate key/button)
+godot-dev game input-action jump release    # release an input action
 godot-dev game repl                     # interactive GDScript REPL (Ctrl+C exits)
 godot-dev dashboard                     # live terminal: scene tree + perf + logs
 ```
@@ -79,6 +83,7 @@ godot-dev editor signals /root/Level/Player
 godot-dev editor run "get_tree().root.get_class()"
 godot-dev editor screenshot             # capture editor screen as PNG (prints file path)
 godot-dev editor screenshot --output editor.png
+godot-dev editor signal /root/Level/Player hit  # emit a signal on a node in the edited scene
 godot-dev editor repl
 ```
 
