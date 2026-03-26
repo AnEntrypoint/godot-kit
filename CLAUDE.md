@@ -33,6 +33,12 @@ Verify template output after changes:
 node -e "const t=require('./lib/templates')('test'); console.log(Object.keys(t).join('\n'))"
 ```
 
+## Tests
+`npm test` runs `node --test test/*.test.js` (Node.js built-in test runner, no dependencies).
+262 tests across 13 suites covering: protocol encode/decode, compat-checker patterns, scene-tree, templates, engine config, lang plugins, http-client, connection, debugger-client, gd-plugin, skills install, CLI help, and project scaffolding.
+
+Caveat: `protocol.js` encodes large integers (>2^31) as 64-bit; `decodeVariant` returns `BigInt` for these — use `Number()` if you need a JS number, but beware precision loss.
+
 ## Publish
 Push to master. CI bumps version to `1.0.<timestamp>`, commits `package.json` + `package-lock.json`, publishes to npm. Requires `NPM_TOKEN` secret in GitHub repo settings.
 
