@@ -29,36 +29,35 @@ type Diagnostic = {
 
 ## Plugin Loading
 
-- gm-cc scans `<projectDir>/lang/*.js` at hook time — no project-level hook setup needed
+- The rs-plugkit `lang` verb scans `<projectDir>/lang/*.js` (excluding `loader.js`)
 - Validates shape `{ id, exec: { match, run } }` — invalid plugins are silently skipped
-- `lang/loader.js` is a convenience export for testing; hooks inline their own loader
+- `lang/loader.js` is a convenience export for testing; the verb inlines its own loader
 
-## exec: Dispatch (pre-tool-use hook — gm-cc managed)
+## Spool Invocation
 
-Intercepts `exec:<id>\n<code>` when `<id>` is not a built-in lang.
+The live integration path is the rs-plugkit `lang` verb. Dispatch via the spool:
+
+```
+.gm/exec-spool/in/lang/<N>.txt   body: {"projectDir":"<absolute>","command":"exec:gdscript","code":"<src>","timeoutMs":35000}
+.gm/exec-spool/out/lang-<N>.json
+```
 
 1. Find first plugin where `plugin.exec.match.test(command)`
-2. Call `plugin.exec.run(code, cwd)` in a child process (30s timeout)
-3. Return output as `exec:<id> output:\n\n<result>`
-4. If no plugin matches, fall through to built-in exec: dispatch
+2. Call `plugin.exec.run(code, projectDir)` via `host_exec_js` (timeout = `timeoutMs`)
+3. Return `{ ok: true, plugin_id, output, ms }`
+4. If no plugin matches: `{ ok: false, error: "no-plugin-matched", available: [...] }`
 
-## LSP Context (prompt-submit hook — gm-cc managed)
+`projectDir` must be absolute (the watcher cwd is not the kit dir). Fallback only, off-spool:
+`node <gm-plugkit-install>/lang-host-runner.js <projectDir> '<command>' '<code-base64>'`.
 
-1. Load all plugins from `<projectDir>/lang/`
-2. For each plugin with `lsp` + `extensions`: scan top 3 most-recently-modified matching files
-3. Call `plugin.lsp.check(fileContent, dir)` synchronously — async not supported here
-4. Inject diagnostics as `<file>:<line>:<col>: <severity>: <message>` into `additionalContext`
+## lsp + context
 
-## context Injection (session-start + prompt-submit hooks — gm-cc managed)
-
-For each plugin with `context`:
-- String: injected directly into `additionalContext`
-- Function: called, result injected (truncated to 2000 chars)
-- Failures are silent
+A plugin's optional `lsp.check(code, cwd)` returns `Diagnostic[]`; optional `context`
+(string or function) supplies prompt-context. These surface through the harness when present.
 
 ## Constraints
 
-- `exec.run` must resolve within 10s or be killed via `AbortController`
+- `exec.run` should resolve within the dispatch `timeoutMs` or it is killed
 - Multiple plugins may match — first match wins
 - Plugins must be CommonJS (`module.exports`)
 - No plugin may mutate global state or spawn persistent processes

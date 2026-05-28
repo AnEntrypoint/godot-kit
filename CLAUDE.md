@@ -43,7 +43,7 @@ Caveat: `protocol.js` encodes large integers (>2^31) as 64-bit; `decodeVariant` 
 Push to master. CI bumps version to `1.0.<timestamp>`, commits `package.json` + `package-lock.json`, publishes to npm. Requires `NPM_TOKEN` secret in GitHub repo settings.
 
 ## Language Plugins (lang/)
-Project-local language plugins extend gm-cc with `exec:<lang>` runtime support and LSP context.
+Project-local language plugins extend gm-skill with `exec:<lang>` runtime support and LSP context.
 
 - `lang/SPEC.md` — plugin interface specification
 - `lang/loader.js` — `loadLangPlugins(projectDir)` used by hooks
