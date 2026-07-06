@@ -1,29 +1,23 @@
 {
   "name": "godot-kit",
   "version": "1.0.1776332945",
-  "description": "Agentic Godot 4.x development boilerplate - REPL/CLI debugging, gdtoolkit, DAP, scene inspector, profiler",
+  "description": "Agent Skills installer for Godot 4.x - installs a HTTP-bridge debugging skill (runtime scene tree, live eval, editor control) into an existing Godot project, no CLI binary required",
   "bin": {
-    "godot-kit": "bin/create.js",
-    "godot-dev": "bin/cli.js"
+    "godot-kit": "bin/install.js"
   },
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node test.js"
   },
   "keywords": [
     "godot",
     "gdscript",
     "game-dev",
     "debugger",
-    "repl",
-    "boilerplate",
-    "gdtoolkit"
+    "agent-skills",
+    "claude-skill"
   ],
   "author": "AnEntrypoint",
   "license": "MIT",
-  "dependencies": {
-    "chokidar": "^5.0.0",
-    "commander": "^12.1.0"
-  },
   "engines": {
     "node": ">=18.0.0"
   },
